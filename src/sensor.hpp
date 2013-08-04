@@ -62,7 +62,7 @@ class SensorGroup {
 
     private:
         std::map<std::string, int> _sensors;
-        static void _deviceRemoval(YModule *m) {
+        void _deviceRemoval(YModule *m) {
             LOG(INFO) << "Devince removal: " << m->get_serialNumber();
         }
 
@@ -70,7 +70,6 @@ class SensorGroup {
             LOG(INFO) << "Device arrival: " << m->describe() ;
             int fctcount = m->functionCount();
             std::string fctName, fctFullName;
-            TemperatureSensor x;
         
             for (int i = 0; i < fctcount; i++) {
                 fctName = m->functionId(i);
@@ -85,7 +84,7 @@ class SensorGroup {
 
                 // register call back for temperature sensors
                 if (fctName.find("temperature")==0) { 
-                    x = TemperatureSensor(m->get_serialNumber(), fctName);
+                    TemperatureSensor x(m->get_serialNumber(), fctName);
                     x.start();
                 }
 
