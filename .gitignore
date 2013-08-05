@@ -5,3 +5,5 @@ meteo
 libyocto.so
 CTestTestfile.cmake
 Makefile
+*.pyc
+

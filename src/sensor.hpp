@@ -18,18 +18,13 @@
 
 #include "glog/logging.h"
 
+typedef TypedSensor<YTemperature> TemperatureSensor;
+typedef TypedSensor<YHumidity> HumiditySensor;
+typedef TypedSensor<YPressure> PressureSensor;
+
+
 static void log(const std::string& msg) {
     LOG(INFO) << msg;
-}
-
-static void anButtonChangeCallBack(YHumidity *fct, const string& value)
-{
-    LOG(INFO) << "Humidity change    :" << fct->describe() << " = " <<value;
-}
-
-static void lightSensorChangeCallBack(YPressure *fct, const string& value)
-{
-    LOG(INFO) << "Pressure change       :" << fct->describe() << " = " << value << "lx";
 }
 
 class Sensor {
@@ -58,48 +53,49 @@ class TypedSensor:public Sensor {
 
 };
 
-class TemperatureSensor: public TypedSensor<YTemperature> {
-    public:
-        TemperatureSensor(const std::string& device, const std::string& function):TypedSensor(device, function){}
+template <class T>
+boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
+    T x(m->get_serialNumber(), fctName);
+    x.start();
+    return boost::make_shared<T>(x);
 };
 
 class SensorGroup { 
 
     private:
-        std::map<std::string, int> _sensors;
+        static std::map<std::string, int> _sensors;
         static std::set<boost::shared_ptr<Sensor> > _devices;
+
 
         static void _deviceArrival(YModule *m) {
             LOG(INFO) << "Device arrival: " << m->describe() ;
             int fctcount = m->functionCount();
-            std::string fctName, fctFullName;
         
             for (int i = 0; i < fctcount; i++) {
-                fctName = m->functionId(i);
-                fctFullName = m->get_serialNumber() + "." + fctName;
+                std::string fctName = m->functionId(i);
+                std::string fctFullName = m->get_serialNumber() + "." + fctName;
 
+                std::map<std::string, int>::const_iterator it = _sensors.find(fctName);
+                if (it==_sensors.end()) {
+                    LOG(ERROR) << "Could not find sensor! " << fctFullName;
+                    continue;
+                }
+
+                const int sensorVal = _sensors[fctName];
+                switch(sensorVal) {
+                    case 1:
+                        _devices.insert(sensorHelper<TemperatureSensor>(m, fctName));
+                        break;
+                    case 2:
+                        _devices.insert(sensorHelper<HumiditySensor>(m, fctName));
+                        break;
+                    case 3:
+                         _devices.insert(sensorHelper<PressureSensor>(m, fctName));
+                        break;
+                }
                 // register call back for anbuttons
-                if (fctName.find("humidity")==0) { 
-                    YHumidity *t = YHumidity::FindHumidity(fctFullName);
-                    t->registerValueCallback(anButtonChangeCallBack);
-                    LOG(INFO) << "Callback registered for : " << fctFullName;
-                }
 
-                // register call back for temperature sensors
-                if (fctName.find("temperature")==0) { 
-                    TemperatureSensor x(m->get_serialNumber(), fctName);
-                    x.start();
-                    _devices.insert(boost::make_shared<TemperatureSensor>(x));
-
-                }
-
-                // register call back for light sensors
-                if (fctName.find("pressure")==0) { 
-                    YPressure *l = YPressure::FindPressure(fctFullName);
-                    l->registerValueCallback(lightSensorChangeCallBack);
-                    LOG(INFO) << "Callback registered for : " << fctFullName;
-                }
-                // and so on for other sensor type.....
+                LOG(INFO) << "Callback registered for : " << fctFullName;
             }
         }
 
@@ -113,8 +109,5 @@ class SensorGroup {
         int start();
 
 };
-
-void deviceArrivalDummy(SensorGroup*, YModule*) ;
-
 
 #endif

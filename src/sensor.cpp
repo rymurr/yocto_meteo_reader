@@ -1,6 +1,7 @@
 #include "sensor.hpp"
 
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
+std::map<std::string, int> SensorGroup::_sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
 
 SensorGroup::SensorGroup() {
     YAPI::RegisterLogFunction(log);
@@ -8,7 +9,6 @@ SensorGroup::SensorGroup() {
     YAPI::RegisterDeviceRemovalCallback(this->_deviceRemoval);
     YAPI::DisableExceptions();
 
-    _sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
 };
 
 int SensorGroup::start() {
