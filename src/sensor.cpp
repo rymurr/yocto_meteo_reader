@@ -2,6 +2,7 @@
 
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 std::map<std::string, int> SensorGroup::_sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
+std::queue<meteo::SensorReading> Sensor::_data = std::queue<meteo::SensorReading>();
 
 SensorGroup::SensorGroup() {
     YAPI::RegisterLogFunction(log);
@@ -24,3 +25,8 @@ int SensorGroup::start() {
     } 
     return 0;
 }
+
+long return_ms_from_epoch(const boost::posix_time::ptime& pt) {
+    return (pt-boost::posix_time::ptime(boost::gregorian::date(1970, boost::gregorian::Dec, 1))).total_milliseconds();
+}
+

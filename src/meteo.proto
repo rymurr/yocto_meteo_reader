@@ -1,0 +1,9 @@
+
+package meteo;
+
+message SensorReading {
+    required string sensor = 1;
+    required string device = 2;
+    required int64 timestamp = 3;
+    required double value = 4;
+}

@@ -6,4 +6,5 @@ libyocto.so
 CTestTestfile.cmake
 Makefile
 *.pyc
-
+*.pb.*
+*.swp
