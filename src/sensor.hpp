@@ -27,11 +27,6 @@ static void anButtonChangeCallBack(YHumidity *fct, const string& value)
     LOG(INFO) << "Humidity change    :" << fct->describe() << " = " <<value;
 }
 
-static void temperatureChangeCallBack(YTemperature *fct, const string& value)
-{
-    LOG(INFO) << "Temperature change :" << fct->describe() << " = " <<value ;
-}
-
 static void lightSensorChangeCallBack(YPressure *fct, const string& value)
 {
     LOG(INFO) << "Pressure change       :" << fct->describe() << " = " << value << "lx";
@@ -40,38 +35,41 @@ static void lightSensorChangeCallBack(YPressure *fct, const string& value)
 class Sensor {
     public:
         virtual void start() = 0;
-
 };
 
-class TemperatureSensor: Sensor {
+template <class T>
+class TypedSensor:public Sensor {
     private:
-        boost::shared_ptr<YTemperature> _sensor;
+        boost::shared_ptr<T> _sensor;
         const std::string _device, _function, _fullName;
-
-        static void _callback(YTemperature *fct, const std::string& value) {
-            LOG(INFO) << "Temp: " << fct->describe() << " = " << value;
+        
+        static void _callback(T *fct, const std::string& value) {
+            LOG(INFO) << "Temp: " << fct->describe() << " == " << value;
         }
 
     public:
-        TemperatureSensor(const std::string& device, const std::string& function): _device(device), _function(function), _fullName(device + "." + function) {
+        TypedSensor(const std::string& device, const std::string& function): _device(device), _function(function), _fullName(device + "." + function) {
         }
-
-        virtual void start() {
-           _sensor = boost::shared_ptr<YTemperature>(YTemperature::FindTemperature(_fullName));
-           //_sensor -> registerValueCallback(this->_callback);
-           _sensor -> registerValueCallback(temperatureChangeCallBack);
+        virtual void start(){
+            _sensor = boost::shared_ptr<T>(T::Find(_fullName));
+            _sensor -> registerValueCallback(this->_callback);
            LOG(INFO) << "Callback registered for: " << _fullName ;
-        }
+        } 
+
+};
+
+class TemperatureSensor: public TypedSensor<YTemperature> {
+    public:
+        TemperatureSensor(const std::string& device, const std::string& function):TypedSensor(device, function){}
 };
 
 class SensorGroup { 
 
     private:
-        static td::map<std::string, int> _sensors;
-        static std::set<boost::shared_ptr<TemperatureSensor> > _devices;
+        std::map<std::string, int> _sensors;
+        static std::set<boost::shared_ptr<Sensor> > _devices;
 
-    public:    
-        static void deviceArrival(YModule *m) {
+        static void _deviceArrival(YModule *m) {
             LOG(INFO) << "Device arrival: " << m->describe() ;
             int fctcount = m->functionCount();
             std::string fctName, fctFullName;
@@ -109,6 +107,7 @@ class SensorGroup {
             LOG(INFO) << "Devince removal: " << m->get_serialNumber();
         }
 
+    public:
         SensorGroup();
 
         int start();

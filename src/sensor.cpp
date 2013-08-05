@@ -1,19 +1,12 @@
 #include "sensor.hpp"
 
-void deviceArrivalDummy(SensorGroup* grp, YModule* m) {
-    std::cout << "foo" << std::endl;
-    grp->deviceArrival(m);
-};
+std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 
 SensorGroup::SensorGroup() {
     YAPI::RegisterLogFunction(log);
-    boost::function<void (YModule* x)> devArr = boost::bind(deviceArrivalDummy, this, _1);
-    YAPI::RegisterDeviceArrivalCallback(*devArr.target<void(*)(YModule*)>());
-    std::cout << "foo" << std::endl;
+    YAPI::RegisterDeviceArrivalCallback(this->_deviceArrival);
     YAPI::RegisterDeviceRemovalCallback(this->_deviceRemoval);
-    std::cout << "foo" << std::endl;
     YAPI::DisableExceptions();
-    std::cout << "foo" << std::endl;
 
     _sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
 };
@@ -31,5 +24,3 @@ int SensorGroup::start() {
     } 
     return 0;
 }
-
-
