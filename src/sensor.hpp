@@ -3,7 +3,11 @@
 #define _SENSOR_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <set>
 #include <map>
 #include <string>
 
@@ -54,19 +58,20 @@ class TemperatureSensor: Sensor {
 
         virtual void start() {
            _sensor = boost::shared_ptr<YTemperature>(YTemperature::FindTemperature(_fullName));
-           _sensor -> registerValueCallback(this->_callback);
+           //_sensor -> registerValueCallback(this->_callback);
+           _sensor -> registerValueCallback(temperatureChangeCallBack);
            LOG(INFO) << "Callback registered for: " << _fullName ;
         }
 };
+
 class SensorGroup { 
 
     private:
-        std::map<std::string, int> _sensors;
-        void _deviceRemoval(YModule *m) {
-            LOG(INFO) << "Devince removal: " << m->get_serialNumber();
-        }
+        static td::map<std::string, int> _sensors;
+        static std::set<boost::shared_ptr<TemperatureSensor> > _devices;
 
-        static void _deviceArrival(YModule *m) {
+    public:    
+        static void deviceArrival(YModule *m) {
             LOG(INFO) << "Device arrival: " << m->describe() ;
             int fctcount = m->functionCount();
             std::string fctName, fctFullName;
@@ -86,6 +91,8 @@ class SensorGroup {
                 if (fctName.find("temperature")==0) { 
                     TemperatureSensor x(m->get_serialNumber(), fctName);
                     x.start();
+                    _devices.insert(boost::make_shared<TemperatureSensor>(x));
+
                 }
 
                 // register call back for light sensors
@@ -98,29 +105,17 @@ class SensorGroup {
             }
         }
 
-    public:
-        SensorGroup() {
-            YAPI::RegisterLogFunction(log);
-            YAPI::RegisterDeviceArrivalCallback(this->_deviceArrival);
-            YAPI::RegisterDeviceRemovalCallback(this->_deviceRemoval);
-            YAPI::DisableExceptions();
-    
-            _sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
+        static void _deviceRemoval(YModule *m) {
+            LOG(INFO) << "Devince removal: " << m->get_serialNumber();
         }
 
-        int start() {
-            std::string errmsg;
-            if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-                LOG(ERROR) << "RegisterHub error : " << errmsg;
-                return 1;
-            }
- 
-            while (true) {
-                YAPI::UpdateDeviceList(errmsg); // traps plug/unplug events
-                YAPI::Sleep(500, errmsg);   // traps others events
-            } 
-            return 0;
-        }
+        SensorGroup();
+
+        int start();
 
 };
+
+void deviceArrivalDummy(SensorGroup*, YModule*) ;
+
+
 #endif
