@@ -125,10 +125,17 @@ class SensorGroup {
             LOG(INFO) << "Devince removal: " << m->get_serialNumber();
         } 
 
-    public:
         SensorGroup();
+        SensorGroup(const SensorGroup&);
+        void operator=(const SensorGroup&);
 
-        int  start();
+    public:
+        static SensorGroup& getInstance() {
+            static SensorGroup s;
+            return s;
+        }
+
+        int start();
 
 };
 
