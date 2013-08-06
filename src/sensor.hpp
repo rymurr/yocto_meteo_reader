@@ -124,6 +124,9 @@ class SensorGroup {
             return s;
         }
 
+        void deviceRemoval(YModule *m) {
+            LOG(INFO) << "Devince removal: " << m->get_serialNumber();
+        }
         static void addToQueue(meteo::SensorReading r) {
             boost::mutex::scoped_lock(guard);
             //_data.push(r);

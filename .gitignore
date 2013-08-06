@@ -2,6 +2,8 @@ CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
 meteo
+pub_meteo
+sub_meteo
 libyocto.so
 CTestTestfile.cmake
 Makefile
