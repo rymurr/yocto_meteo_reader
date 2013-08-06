@@ -8,6 +8,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <algorithm>
 #include <queue>
 #include <set>
 #include <map>
@@ -30,15 +33,8 @@ static void log(const std::string& msg) {
 long return_ms_from_epoch(const boost::posix_time::ptime&); 
 
 class Sensor {
-    private:
-        static std::queue<meteo::SensorReading> _data;
-        static boost::mutex guard;
     public:
         virtual void start() {};
-        static void addToQueue(meteo::SensorReading r) {
-            boost::mutex::scoped_lock(guard);
-            _data.push(r);
-        }
 };
 
 template <class T>
@@ -60,18 +56,7 @@ class TypedSensor:public Sensor {
             _sensor -> registerValueCallback(this->_callback);
            LOG(INFO) << "Callback registered for: " << _fullName ;
         } 
-        static void addToQueue(T *fct, const std::string& value) {
-            meteo::SensorReading reading;
-            reading.set_value(boost::lexical_cast<double>(value)); 
-            std::vector<std::string> strs;
-            const std::string name = fct->get_friendlyName();
-            boost::split(strs, name, boost::is_any_of("."));
-            reading.set_device(strs[0]);
-            reading.set_sensor(strs[1]);
-            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-            reading.set_timestamp(return_ms_from_epoch(now));
-            Sensor::addToQueue(reading);
-        };
+        static void addToQueue(T *fct, const std::string& value);
 };
 
 typedef TypedSensor<YTemperature> TemperatureSensor;
@@ -85,12 +70,15 @@ boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
     return boost::make_shared<T>(x);
 };
 
+typedef boost::function<void (meteo::SensorReading&)> readingCallback;
 class SensorGroup { 
 
     private:
         static std::map<std::string, int> _sensors;
         static std::set<boost::shared_ptr<Sensor> > _devices;
 
+        static std::queue<meteo::SensorReading> _data;
+        static boost::mutex guard;
 
         static void _deviceArrival(YModule *m) {
             LOG(INFO) << "Device arrival: " << m->describe() ;
@@ -129,13 +117,25 @@ class SensorGroup {
         SensorGroup(const SensorGroup&);
         void operator=(const SensorGroup&);
 
+        static std::vector<readingCallback> _callbacks;
     public:
         static SensorGroup& getInstance() {
             static SensorGroup s;
             return s;
         }
 
+        static void addToQueue(meteo::SensorReading r) {
+            boost::mutex::scoped_lock(guard);
+            //_data.push(r);
+            for_each(_callbacks.begin(), _callbacks.end(), boost::bind(&readingCallback::operator(),_1,r));
+        }
+
         int start();
+
+        void addCallback(readingCallback &x) {
+            _callbacks.push_back(x);
+        }
+
 
 };
 
