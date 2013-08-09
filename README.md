@@ -15,17 +15,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 * once static bits are fixed need to refactor for better generality and separation of duties
 
 
-#BSON:
-
-* add bson library to cmake
-* convert protobuf code to bson code in sensor.cpp
-* need to replace meteo::SensorReading with BSONObj in a lot of places
-* convert zmq send method to put binary form of BSON onto wire
-* convert zmq recieve method to read in a BSON obj directly from the wire
-* recieve bson directly instead of converting from string
-* remove protobuf from cmake/project
-
-
 #STORAGE:
 
 * queue to store incoming messages and dump to disk whenever it gets 'large'

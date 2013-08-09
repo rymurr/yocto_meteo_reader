@@ -16,9 +16,10 @@ SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING "Choose the type of bui
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.54.0 COMPONENTS system)
+find_package(Boost 1.54.0 COMPONENTS system filesystem program_options thread-mt)
 include_directories(${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
+
 find_package(Glog)
 include_directories(${Glog_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Glog_LIBRARIES} -lglog)
@@ -26,9 +27,9 @@ set(LIBS ${LIBS} ${Glog_LIBRARIES} -lglog)
 find_package(libusb-1.0)
 set(LIBS ${LIBS} ${LIBUSB_1_LIBRARIES})
 
-find_package(Protobuf)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
+find_package(MongoDB)
+include_directories(${MongoDB_INCLUDE_DIR})
+set(LIBS ${LIBS} ${MongoDB_LIBRARIES})
 
 find_package(ZMQ)
 include_directories(${ZMQ_INCLUDE_DIRS})

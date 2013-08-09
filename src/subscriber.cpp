@@ -1,8 +1,17 @@
 #include <queue>
+#include "mongo/client/dbclient.h"
 #include "zhelpers.hpp"
-#include "meteo.pb.h"
 
 enum {WEEKLY, PERSISTENT};
+
+static mongo::BSONObj
+s_recvobj (zmq::socket_t & socket) {
+
+    zmq::message_t message;
+    socket.recv(&message);
+
+    return mongo::BSONObj(static_cast<char*>(message.data()));
+}
 
 int main () {
     //  Prepare our context and subscriber
@@ -16,10 +25,8 @@ int main () {
         //  Read envelope with address
         std::string address = s_recv (subscriber);
         //  Read message contents
-        std::string contents = s_recv (subscriber);
-        meteo::SensorReading r;
-        r.ParseFromString(contents);
-        std::cout << r.device() << " " << r.sensor() << " " << r.value() << " " << r.timestamp() << std::endl;
+        mongo::BSONObj r  = s_recvobj (subscriber);
+        std::cout << r.jsonString() << std::endl;
     }
     return 0;
 }
