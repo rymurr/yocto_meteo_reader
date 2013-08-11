@@ -27,8 +27,8 @@ int SensorGroup::start() {
     return 0;
 }
 
-double return_ms_from_epoch(const boost::posix_time::ptime& pt) {
-    return ((double)(pt-boost::posix_time::ptime(boost::gregorian::date(1970, boost::gregorian::Dec, 1))).total_milliseconds())/1000.;
+long long return_ms_from_epoch(const boost::posix_time::ptime& pt) {
+    return (pt-boost::posix_time::ptime(boost::gregorian::date(1970, boost::gregorian::Dec, 1))).total_milliseconds();
 }
 
 template <class T>
@@ -47,7 +47,7 @@ void TypedSensor<T>::addToQueue(T *fct, const std::string& value) {
     b.append("value", boost::lexical_cast<double>(value));
     b.append("device", strs[0]);
     b.append("sensor", strs[1]);
-    b.append("timestamp", return_ms_from_epoch(now));
+    b.append("timestamp", mongo::Date_t(return_ms_from_epoch(now)));
     mongo::BSONObj reading = b.obj();
     SensorGroup::addToQueue(reading);
 }

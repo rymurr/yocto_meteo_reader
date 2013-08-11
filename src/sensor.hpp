@@ -32,7 +32,7 @@ static void log(const std::string& msg) {
     LOG(INFO) << msg;
 }
 
-double return_ms_from_epoch(const boost::posix_time::ptime&); 
+long long return_ms_from_epoch(const boost::posix_time::ptime&); 
 
 class Sensor {
     public:
