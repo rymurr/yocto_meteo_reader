@@ -9,21 +9,18 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
-#include <boost/bind.hpp>
 #include <algorithm>
-#include <queue>
 #include <set>
 #include <map>
 #include <string>
 #include <boost/thread.hpp>
-
-#include "mongo/client/dbclient.h"
 
 #include "yocto_api.h"
 #include "yocto_temperature.h"
 #include "yocto_humidity.h"
 #include "yocto_pressure.h"
 
+#include "message.hpp"
 #include "glog/logging.h"
 
 #define BOOST_FILESYSTEM_VERSION 3
@@ -72,44 +69,15 @@ boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
     return boost::make_shared<T>(x);
 };
 
-typedef boost::function<void (mongo::BSONObj&)> readingCallback;
+typedef boost::function<void (Message&)> readingCallback;
 class SensorGroup { 
 
     private:
         static std::map<std::string, int> _sensors;
         static std::set<boost::shared_ptr<Sensor> > _devices;
-
-        static std::queue<mongo::BSONObj> _data;
         static boost::mutex guard;
 
-        static void _deviceArrival(YModule *m) {
-            LOG(INFO) << "Device arrival: " << m->describe() ;
-            int fctcount = m->functionCount();
-        
-            for (int i = 0; i < fctcount; i++) {
-                std::string fctName = m->functionId(i);
-                std::string fctFullName = m->get_serialNumber() + "." + fctName;
-
-                std::map<std::string, int>::const_iterator it = _sensors.find(fctName);
-                if (it==_sensors.end()) {
-                    LOG(ERROR) << "Could not find sensor! " << fctFullName;
-                    continue;
-                }
-
-                const int sensorVal = _sensors[fctName];
-                switch(sensorVal) {
-                    case 1:
-                        _devices.insert(sensorHelper<TemperatureSensor>(m, fctName));
-                        break;
-                    case 2:
-                        _devices.insert(sensorHelper<HumiditySensor>(m, fctName));
-                        break;
-                    case 3:
-                         _devices.insert(sensorHelper<PressureSensor>(m, fctName));
-                        break;
-                }
-            }
-        }
+        static void _deviceArrival(YModule *m) ;
 
         static void _deviceRemoval(YModule *m) {
             LOG(INFO) << "Devince removal: " << m->get_serialNumber();
@@ -129,10 +97,12 @@ class SensorGroup {
         void deviceRemoval(YModule *m) {
             LOG(INFO) << "Devince removal: " << m->get_serialNumber();
         }
-        static void addToQueue(mongo::BSONObj r) {
+        static void addToQueue(Message &r) {
             boost::mutex::scoped_lock(guard);
-            //_data.push(r);
-            for_each(_callbacks.begin(), _callbacks.end(), boost::bind(&readingCallback::operator(),_1,r));
+            //for_each(_callbacks.begin(), _callbacks.end(), boost::bind<void>(&readingCallback::operator(),_1,r));
+            for (int i=0;i<_callbacks.size();++i) {
+                _callbacks[i](r);
+            }
         }
 
         int start();

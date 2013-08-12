@@ -2,7 +2,6 @@
 
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 std::map<std::string, int> SensorGroup::_sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
-std::queue<mongo::BSONObj> SensorGroup::_data = std::queue<mongo::BSONObj>();
 std::vector<readingCallback> SensorGroup::_callbacks = std::vector<readingCallback>();
 
 SensorGroup::SensorGroup() {
@@ -37,18 +36,37 @@ void TypedSensor<T>::addToQueue(T *fct, const std::string& value) {
     const std::string name = fct->get_friendlyName();
     boost::split(strs, name, boost::is_any_of("."));
     boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-    /*meteo::SensorReading reading;
-    reading.set_value(boost::lexical_cast<double>(value)); 
-    reading.set_device(strs[0]);
-    reading.set_sensor(strs[1]);
-    reading.set_timestamp(return_ms_from_epoch(now));*/
 
-    mongo::BSONObjBuilder b;
-    b.append("value", boost::lexical_cast<double>(value));
-    b.append("device", strs[0]);
-    b.append("sensor", strs[1]);
-    b.append("timestamp", mongo::Date_t(return_ms_from_epoch(now)));
-    mongo::BSONObj reading = b.obj();
+    MongoMessage reading(strs[0], strs[1], return_ms_from_epoch(now), boost::lexical_cast<double>(value));
     SensorGroup::addToQueue(reading);
+}
+
+void SensorGroup::_deviceArrival(YModule *m) {
+    LOG(INFO) << "Device arrival: " << m->describe() ;
+    int fctcount = m->functionCount();
+
+    for (int i = 0; i < fctcount; i++) {
+        std::string fctName = m->functionId(i);
+        std::string fctFullName = m->get_serialNumber() + "." + fctName;
+
+        std::map<std::string, int>::const_iterator it = _sensors.find(fctName);
+        if (it==_sensors.end()) {
+            LOG(ERROR) << "Could not find sensor! " << fctFullName;
+            continue;
+        }
+
+        const int sensorVal = _sensors[fctName];
+        switch(sensorVal) {
+            case 1:
+                _devices.insert(sensorHelper<TemperatureSensor>(m, fctName));
+                break;
+            case 2:
+                _devices.insert(sensorHelper<HumiditySensor>(m, fctName));
+                break;
+            case 3:
+                 _devices.insert(sensorHelper<PressureSensor>(m, fctName));
+                break;
+        }
+    }
 }
 
