@@ -4,6 +4,9 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
+#include <sstream>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "glog/logging.h"
 #include "sensor.hpp"
@@ -12,27 +15,22 @@
 
 enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT};
 
-void threaded_rep(boost::shared_ptr<zmq::socket_t>, std::string&);
+void threaded_rep(std::string, std::string);
 
 class Publisher{
 
     private:
         zmq::context_t _context;
         zmq::socket_t _publisher;
-        zmq::socket_t _sync;
-        std::string _msg;
         boost::thread _rep_thread;
         
     public:
-        Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp://", message_type_t msg_type=BSON):_context(1),
-                             _publisher(_context, ZMQ_PUB),
-                             _sync(_context, ZMQ_REP) {
-             _publisher.bind(protocol.append(hostname).append(":").append(std::to_string(port)).c_str());
-             _sync.bind(protocol.append(hostname).append(std::to_string(port+1)).c_str());
-             std::string msg = "message_";
-             _msg = msg.append(std::to_string(msg_type));    
-             //s_sendmore(_publisher, "CONTROL");
-             //s_send(_publisher, msg.append(std::to_string(mgs_type)));
+        Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON):_context(1),
+                             _publisher(_context, ZMQ_PUB){
+             _publisher.bind(connect_name(protocol, hostname, port).c_str());
+             std::string msg = make_msg(msg_type);
+             sleep(1);
+             startThread(protocol, hostname, port+1, msg);
         }
         void callback(Message& x) {
              s_sendmore(_publisher,x.id());
@@ -40,13 +38,25 @@ class Publisher{
              sleep(1);
         }
 
-        void startThread() {
-            _rep_thread = boost::thread(threaded_rep, _sync, _msg);         
+        void startThread(std::string& protocol, std::string& hostname, int port, std::string msg) {
+            _rep_thread = boost::thread(threaded_rep, connect_name(protocol, hostname, port), msg);         
+            _rep_thread.detach();
+        }
+
+        std::string make_msg(message_type_t msg_type) {
+            boost::property_tree::ptree pt;
+            pt.put("type", msg_type);
+            std::ostringstream buf;
+            boost::property_tree::write_json(buf, pt, false);
+            return buf.str();
         }
 
 };
 
-void threaded_rep(boost::shared_ptr<zmq::socket_t> sync, std::string& msg) {
+void threaded_rep(std::string hostname, std::string msg){
+    zmq::context_t context(1);
+    zmq::socket_t sync(context, ZMQ_REP);
+    sync.bind(hostname.c_str());
     while(1) {
         s_recv(sync);
         s_send(sync, msg);

@@ -15,12 +15,29 @@ class Subscriber {
     private:
         zmq::context_t _context;
         zmq::socket_t _subscriber;
+        zmq::socket_t _sync;
+        std::string _conf_string;
 
     public:
-        Subscriber(std::string protocol="tcp://", std::string host="localhost:5563"): _context(1), _subscriber(_context, ZMQ_SUB) {
-            _subscriber.connect(protocol.append(host).c_str());
+        Subscriber(std::string protocol="tcp", std::string host="localhost", int port=5563): _context(1), _subscriber(_context, ZMQ_SUB), _sync(_context, ZMQ_REQ) {
+            _subscriber.connect(connect_name(protocol, host, port).c_str());
             _subscriber.setsockopt( ZMQ_SUBSCRIBE, "", 0);
+            _sync.connect(connect_name(protocol, host, port+1).c_str());
+
+            std::cout << "foo" << std::endl;
+            s_send(_sync,"");
+            _conf_string = s_recv(_sync);
+            std::cout << _conf_string << std::endl;
         }   
+
+        void start() {
+            while (1) {
+                std::string address = s_recv(_subscriber);
+                std::cout << "address" << std::endl;
+                mongo::BSONObj r = s_recvobj(_subscriber);
+                std::cout << r.jsonString() << std::endl;
+            }
+        }
 
 };
 
@@ -31,7 +48,9 @@ int main () {
     boost::filesystem::path p("/data/meteo/storage");
         std::vector<mongo::BSONObj> bson_queue;
 
-    while (1) {
+    Subscriber s;
+    s.start();
+/*    while (1) {
 
         //  Read envelope with address
         //std::string address = s_recv (subscriber);
@@ -43,6 +62,6 @@ int main () {
 //            x = drain_to_file(bson_queue, boost::filesystem::path("data"), "meteo", x);
 //            drain_to_mongo(bson_queue);
 //        }
-    }
+    }*/
     return 0;
 }
