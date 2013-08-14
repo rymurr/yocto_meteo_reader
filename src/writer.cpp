@@ -63,13 +63,23 @@ static std::vector<mongo::BSONObj> read_dir(const boost::filesystem::path &p) {
     return bson_queue;
 }
 
-void MongoWriter::drain() {
+ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
+    ptrWriter retVal;
+    switch(writer_type) {
+        case MONGO:
+            retVal = ptrWriter(new MongoWriter(option));
+            break;
+        default:
+            retVal = NULL;
+    }
+    return retVal;
+}
+void MongoWriter::drain(msgArr msgs) {
     mongo::DBClientConnection c;
     c.connect(_hostname);
-    for (std::size_t i=0;i<_bson_queue.size();++i) {
-        std::cout << "inserting " << _bson_queue[i].jsonString() << std::endl;
-        c.insert("meteo.measurement", _bson_queue[i]);
+    for (std::size_t i=0;i<msgs.size();++i) {
+        std::cout << "inserting " << msgs[i]->string() << std::endl;
+        c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(msgs[i])->obj());
     }
-    _bson_queue.clear();
 }
 

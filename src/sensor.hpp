@@ -55,6 +55,11 @@ class TypedSensor:public Sensor {
             _sensor -> registerValueCallback(this->_callback);
            LOG(INFO) << "Callback registered for: " << _fullName ;
         } 
+
+        /*  TODO
+         *  this is the only function where MongoMessage is directly called on publish side.
+         *  Have to add config/overload to TypedSensor to make message type more pluggabled$a"message_"
+         */
         static void addToQueue(T *fct, const std::string& value);
 };
 

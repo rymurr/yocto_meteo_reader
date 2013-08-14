@@ -13,7 +13,6 @@
 #include "zhelpers.hpp"
 #include "message.hpp"
 
-enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT};
 
 void threaded_rep(std::string, std::string);
 
@@ -29,7 +28,6 @@ class Publisher{
                              _publisher(_context, ZMQ_PUB){
              _publisher.bind(connect_name(protocol, hostname, port).c_str());
              std::string msg = make_msg(msg_type);
-             sleep(1);
              startThread(protocol, hostname, port+1, msg);
         }
         void callback(Message& x) {
@@ -43,25 +41,9 @@ class Publisher{
             _rep_thread.detach();
         }
 
-        std::string make_msg(message_type_t msg_type) {
-            boost::property_tree::ptree pt;
-            pt.put("type", msg_type);
-            std::ostringstream buf;
-            boost::property_tree::write_json(buf, pt, false);
-            return buf.str();
-        }
+        std::string make_msg(message_type_t);
 
 };
-
-void threaded_rep(std::string hostname, std::string msg){
-    zmq::context_t context(1);
-    zmq::socket_t sync(context, ZMQ_REP);
-    sync.bind(hostname.c_str());
-    while(1) {
-        s_recv(sync);
-        s_send(sync, msg);
-    }
-}
 
 
 #endif 

@@ -11,8 +11,9 @@ and its sent out to various interested parties (storage, live plotting etc)
 * add storage layer to subscriber
 * make code safe and 'deploy' it
 * write some tests and docs
-* react to publisher going down
 * add logging!
+* move stuff out of headers where appropriate
+* lots of error checking!
 
 
 ##STORAGE:

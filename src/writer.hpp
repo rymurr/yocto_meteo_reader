@@ -5,32 +5,42 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include "mongo/client/dbclient.h"
+#include "message.hpp"
 
 enum writer_t {MONGO, FILEDIR_WEEKLY, FILEDIR_PERSISTENT};
+
+typedef std::vector<boost::shared_ptr<Message> > msgArr;
 class AbstractWriter {
     public:
-        virtual void drain() = 0;
-        virtual void addToQueue(mongo::BSONObj&);
+        virtual void drain(msgArr) = 0;
 };
 
 typedef boost::shared_ptr<AbstractWriter> ptrWriter; 
-typedef std::vector<mongo::BSONObj> objVec;
 
 class WriterBuilder {
     public:
-        ptrWriter create(writer_t writer_type, std::string& option);
+        static ptrWriter create(writer_t writer_type, std::string option);
 };
 
 class MongoWriter: public AbstractWriter {
     private: 
         const std::string _hostname;
-        objVec _bson_queue;
 
     public:
         MongoWriter(std::string& hostname): _hostname(hostname){}
     
-        virtual void drain() ;
+        virtual void drain(msgArr);
 
-        virtual void addToQueue(mongo::BSONObj& x){_bson_queue.push_back(x);}
 
+};
+
+class DiskWriter: public AbstractWriter {
+    private:
+        const boost::filesystem::path _p;
+
+    public:
+        DiskWriter(std::string filepath): _p(filepath) {
+        }    
+
+        virtual void drain(msgArr);
 };

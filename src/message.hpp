@@ -7,11 +7,13 @@
 #include <zhelpers.hpp>
 
 typedef boost::shared_ptr<zmq::message_t> msgPtr;
+enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT};
 
 class Message{
     public:
         virtual msgPtr fillmessage() = 0;
         virtual std::string id() = 0;
+        virtual std::string string() = 0;
 };
 
 static void msg_free(void *data, void *hint) {}
@@ -29,6 +31,10 @@ class MongoMessage : public Message {
             _obj = b.obj();
         }
 
+        MongoMessage(char* data){
+            _obj = mongo::BSONObj(data);
+        }
+
         virtual msgPtr fillmessage() {
             return boost::shared_ptr<zmq::message_t>(new zmq::message_t(const_cast<char*>(_obj.objdata()), _obj.objsize(), msg_free));
         }
@@ -37,6 +43,11 @@ class MongoMessage : public Message {
             return _obj.getStringField("sensor");
         }
 
+        virtual std::string string() {
+            return _obj.jsonString();
+        }
+
+        const mongo::BSONObj obj(){return _obj;}
 };
 
 static bool
@@ -48,13 +59,21 @@ s_sendobj (zmq::socket_t & socket, Message& obj) {
     return (rc);
 }
 
-static mongo::BSONObj
-s_recvobj (zmq::socket_t & socket) {
+static boost::shared_ptr<Message>
+s_recvobj (zmq::socket_t & socket, message_type_t msg_type) {
 
     zmq::message_t message;
     socket.recv(&message);
 
-    return mongo::BSONObj(static_cast<char*>(message.data()));
+    boost::shared_ptr<Message> m;
+    switch(msg_type) {
+        case BSON:
+            m = boost::make_shared<MongoMessage>(MongoMessage(static_cast<char*>(message.data())));
+            break;
+        default:
+            m = NULL;    
+    }
+    return m;
 }
 
 #endif
