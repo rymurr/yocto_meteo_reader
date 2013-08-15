@@ -58,8 +58,9 @@ class Subscriber {
 
         void drain_queue() {
             boost::mutex::scoped_lock(guard);
-            //writer.
-        
+            _writer->drain(_bson_queue);
+            _bson_queue.clear();
+
         }
 
 };

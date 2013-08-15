@@ -12,27 +12,34 @@ static bool make_path(const boost::filesystem::path &p) {
     }
 }
 
-static std::size_t drain_queue_to_file(std::vector<mongo::BSONObj> &bson_queue, const boost::filesystem::path &p) {
+int DiskWriter::find_current_count() {
+    return 0;
+}
+
+std::size_t DiskWriter::drain_queue_to_file(msgArr &bson_queue, const boost::filesystem::path &p) {
     FILE * outfile;
     outfile = std::fopen(p.string().c_str(), "w");
     mongo::BSONArrayBuilder b;
     for (std::size_t i=0;i<bson_queue.size();++i) {
-        std::cout << "writing " << bson_queue[i].jsonString() << std::endl;
-        b.append(bson_queue[i]);
+        std::cout << "writing " << bson_queue[i]->string() << std::endl;
+        //all thats left is to handle the binary (on disk) format for general data types.
+        //b.append(bson_queue[i]);
     }
     bson_queue.clear();
     mongo::BSONArray arr = b.arr();
     return std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
 }
 
-static int drain_to_file(std::vector<mongo::BSONObj> &bson_queue, const boost::filesystem::path &p, const std::string &file_prefix, const int count = 0) {
-    boost::filesystem::path filename(p);
-    std::string file(file_prefix);
-    filename /= file.append(std::to_string(count)).append(".bin").c_str();
+void DiskWriter::drain(msgArr bson_queue) {
+    boost::filesystem::path filename(_p);
+    std::string file(_file_prefix);
+    filename /= file.append(std::to_string(_count)).append(".bin").c_str();
     drain_queue_to_file(bson_queue, filename);
-    return count + 1;
+    _count += 1;
+    return ;
 }
 
+/*
 static std::vector<mongo::BSONObj> read_file(const boost::filesystem::path &p) {
     std::vector<mongo::BSONObj> bson_queue;
     FILE * pFile;
@@ -61,7 +68,7 @@ static std::vector<mongo::BSONObj> read_dir(const boost::filesystem::path &p) {
         bson_queue.insert(bson_queue.end(), bson_queue2.begin(), bson_queue2.end());
     }
     return bson_queue;
-}
+}*/
 
 ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
     ptrWriter retVal;
@@ -69,6 +76,9 @@ ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
         case MONGO:
             retVal = ptrWriter(new MongoWriter(option));
             break;
+        case FILEDIR_PERSISTENT:
+            retVal = ptrWriter(new PersistentDiskWriter(option));
+            break;    
         default:
             retVal = NULL;
     }

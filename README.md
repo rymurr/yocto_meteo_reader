@@ -20,6 +20,7 @@ and its sent out to various interested parties (storage, live plotting etc)
 
 * have to iterate over files periodically to remove stale data periodically
 * define periodicity and removal
+* finish general writer to do generic message types
 
 ##DEPLOY:
 

@@ -37,10 +37,26 @@ class MongoWriter: public AbstractWriter {
 class DiskWriter: public AbstractWriter {
     private:
         const boost::filesystem::path _p;
+        const std::string _file_prefix;
+        int _count;
+
+        int find_current_count();
+        std::size_t drain_queue_to_file(msgArr &bson_queue, const boost::filesystem::path &p); 
 
     public:
-        DiskWriter(std::string filepath): _p(filepath) {
+        DiskWriter(std::string filepath): _p(filepath), _file_prefix("meteo") {
+            _count = find_current_count();
         }    
 
         virtual void drain(msgArr);
 };
+
+class PersistentDiskWriter: public DiskWriter {
+    public:
+        PersistentDiskWriter(std::string filepath): DiskWriter(filepath){}
+};
+
+class WeeklyRotateWriter: public DiskWriter {
+        WeeklyRotateWriter(std::string filepath): DiskWriter(filepath){}
+};
+
