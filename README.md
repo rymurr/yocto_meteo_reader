@@ -8,7 +8,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 
 * add some command line options: list of sensors, which boxes, publish port
 * add cli options for recievers: message types, storage options
-* add storage layer to subscriber
 * make code safe and 'deploy' it
 * write some tests and docs
 * add logging!
@@ -19,8 +18,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 ##STORAGE:
 
 * have to iterate over files periodically to remove stale data periodically
-* define periodicity and removal
-* finish general writer to do generic message types
 
 ##DEPLOY:
 

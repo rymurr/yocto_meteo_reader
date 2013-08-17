@@ -72,7 +72,7 @@ int main () {
     boost::filesystem::path p("/data/meteo/storage");
         std::vector<mongo::BSONObj> bson_queue;
 
-    Subscriber s(WriterBuilder::create(writer_t::MONGO, "localhost"));
+    Subscriber s(WriterBuilder::create(writer_t::FILEDIR_PERSISTENT, "localhost", message_type_t::BSON));
     s.start();
 /*    while (1) {
 
