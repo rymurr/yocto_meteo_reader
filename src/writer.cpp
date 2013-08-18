@@ -12,50 +12,101 @@ static bool make_path(const boost::filesystem::path &p) {
     }
 }
 
+static std::string getDate() {
+   boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+   boost::posix_time::time_facet *facet = new boost::posix_time::time_facet("%Y%m%d");
+   std::stringstream ss;
+   ss.imbue(std::locale(ss.getloc(), facet));
+   ss << now;
+   std::string retVal(ss.str());
+   return retVal;
+}
+
+void PersistentDiskWriter::clear() {
+   _count=0; 
+}
+
+void WeeklyRotateWriter::clear() {
+   _count=0; 
+   rotate();
+}
+
+void WeeklyRotateWriter::rotate() {
+    boost::posix_time::ptime mindate(boost::gregorian::day_clock::universal_day()-boost::gregorian::date_duration(7));
+    boost::filesystem::directory_iterator end_itr;
+    for (boost::filesystem::directory_iterator itr(_p); itr != end_itr; ++itr) {
+        boost::posix_time::ptime pt;
+        std::string fname = itr->path().string();
+        boost::replace_first(fname, _p.string(), "");
+        boost::replace_first(fname,"/","");
+        const std::locale loc(std::locale::classic(),new boost::posix_time::time_input_facet("%Y%m%d"));
+        std::istringstream is(fname);
+        is.imbue(loc);
+        is >> pt;
+        if (pt != boost::posix_time::ptime()) {
+            if (pt < mindate){
+                boost::filesystem::remove_all(itr->path());
+            }
+        }
+
+    }
+
+}
+
 int DiskWriter::find_current_count() {
-    return 0;
+    boost::filesystem::path filename(_p);
+    std::string dir=getDate();
+    filename /= dir;
+    make_path(filename);
+    boost::filesystem::directory_iterator end_itr;
+    int x(0);
+    for (boost::filesystem::directory_iterator itr(filename); itr != end_itr; ++itr) {
+        std::string fname = itr->path().string();
+        boost::replace_first(fname, filename.string(), "");
+        boost::replace_first(fname, _file_prefix,"");
+        boost::replace_first(fname,".bin","");
+        boost::replace_first(fname,"/","");
+        int c = boost::lexical_cast<int>(fname);
+        if (c > x) {
+            x = c;
+        }
+    }
+    return x;
 }
 
 static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p) {
-    make_path(p);
     FILE * outfile;
     outfile = std::fopen(p.string().c_str(), "w");
     mongo::BSONArrayBuilder b;
     for (std::size_t i=0;i<bson_queue.size();++i) {
         std::cout << "writing " << bson_queue[i]->string() << std::endl;
         //all thats left is to handle the binary (on disk) format for general data types.
-        //b.append(bson_queue[i]);
+        b.append(boost::static_pointer_cast<MongoMessage>(bson_queue[i])->obj());
     }
     mongo::BSONArray arr = b.arr();
-    return std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
+    std::size_t x = std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
+    return x;
 }
 
 std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p) {
+    std::size_t x;
     switch(_msg_type) {
         case BSON:
-            drain_to_mongo(bson_queue, p);
+            x=drain_to_mongo(bson_queue, p);
             break;
         default:
+            x = 0;
             std::cout << " FOO !" << std::endl;
-
     }
-}
-
-static std::string getDate() {
-   boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
-   boost::posix_time::time_facet *facet = new boost::posix_time::time_facet("%Y%b%d");
-   std::stringstream ss;
-   ss.imbue(std::locale(ss.getloc(), facet));
-   ss << now;
-   free(facet);
-   return ss.str();
+    return x;
 }
 
 void DiskWriter::drain(msgArr bson_queue) {
     boost::filesystem::path filename(_p);
     std::string file(_file_prefix);
-    std::string dir(getDate());
+    std::string dir=getDate();
     filename /= dir;
+    make_path(filename);
     filename /= file.append(std::to_string(_count)).append(".bin").c_str();
     drain_queue_to_file(bson_queue, filename);
     _count += 1;

@@ -13,11 +13,7 @@ and its sent out to various interested parties (storage, live plotting etc)
 * add logging!
 * move stuff out of headers where appropriate
 * lots of error checking!
-
-
-##STORAGE:
-
-* have to iterate over files periodically to remove stale data periodically
+* check thread safety and queue clearing in writers
 
 ##DEPLOY:
 
