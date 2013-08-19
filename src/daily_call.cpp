@@ -31,6 +31,7 @@ void start_callbacks(boost::function<void(void)> x)
 {
     io_service io;
     deadline_timer t(io);
+    x();
     Deadline d(t, x);
     io.run();
 }

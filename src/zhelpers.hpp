@@ -24,6 +24,7 @@
 #ifndef __ZHELPERS_HPP_INCLUDED__
 #define __ZHELPERS_HPP_INCLUDED__
 
+#pragma GCC diagnostic ignored "-Wunused-function"
 //  Include a bunch of headers that we will need in the examples
 
 #include <zmq.hpp>

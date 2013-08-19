@@ -27,8 +27,8 @@ void PersistentDiskWriter::clear() {
 }
 
 void WeeklyRotateWriter::clear() {
-   _count=0; 
-   rotate();
+    _count=0; 
+    rotate();
 }
 
 void WeeklyRotateWriter::rotate() {
@@ -152,6 +152,9 @@ ptrWriter WriterBuilder::create(writer_t writer_type, std::string option, messag
             break;
         case FILEDIR_PERSISTENT:
             retVal = ptrWriter(new PersistentDiskWriter(option, msg_type));
+            break;    
+        case FILEDIR_WEEKLY:
+            retVal = ptrWriter(new WeeklyRotateWriter(option, msg_type));
             break;    
         default:
             retVal = NULL;

@@ -32,7 +32,7 @@ class MongoMessage : public Message {
         }
 
         MongoMessage(char* data){
-            _obj = mongo::BSONObj(data);
+            _obj = mongo::BSONObj(data).copy();
         }
 
         virtual msgPtr fillmessage() {

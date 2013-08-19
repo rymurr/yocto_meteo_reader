@@ -38,7 +38,7 @@ void Subscriber::drain_queue() {
 
 int main () {
     std::string dir("/data/meteo/storage");
-    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(writer_t::FILEDIR_PERSISTENT, dir, message_type_t::BSON);
+    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(writer_t::FILEDIR_WEEKLY, dir, message_type_t::BSON);
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
     Subscriber s(w); 
     boost::thread subThread(boost::ref(s));

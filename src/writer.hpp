@@ -54,7 +54,7 @@ class DiskWriter: public AbstractWriter {
         const boost::filesystem::path _p;
 
     public:
-        DiskWriter(std::string filepath, message_type_t msg_type): _p(filepath), _file_prefix("meteo"), _msg_type(msg_type) {
+        DiskWriter(std::string filepath, message_type_t msg_type): _file_prefix("meteo"), _p(filepath), _msg_type(msg_type) {
             _count = find_current_count();
         }    
 
