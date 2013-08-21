@@ -1,3 +1,6 @@
+#ifndef __SUBSCRIBER_HPP__
+#define __SUBSCRIBER_HPP__
+
 #include <vector>
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -13,6 +16,7 @@
 #include "message.hpp"
 #include "writer.hpp"
 #include "daily_call.hpp"
+#include "param_helper.hpp"
 
 
 class Subscriber {
@@ -39,4 +43,4 @@ class Subscriber {
 
 };
 
-
+#endif

@@ -1,3 +1,5 @@
+#ifndef __WRITER_HPP__
+#define __WRITER_HPP__
 #include <vector>
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -54,7 +56,7 @@ class DiskWriter: public AbstractWriter {
         const boost::filesystem::path _p;
 
     public:
-        DiskWriter(std::string filepath, message_type_t msg_type): _file_prefix("meteo"), _p(filepath), _msg_type(msg_type) {
+        DiskWriter(std::string filepath, message_type_t msg_type): _file_prefix("meteo"), _msg_type(msg_type), _p(filepath) {
             _count = find_current_count();
         }    
 
@@ -76,3 +78,4 @@ class WeeklyRotateWriter: public DiskWriter {
         
 };
 
+#endif

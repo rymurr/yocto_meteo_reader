@@ -36,7 +36,12 @@ void Subscriber::drain_queue() {
 
 }
 
-int main () {
+int main (int argc, char** argv) {
+    SubscriberParams sp;
+    const int paramRet = sp.parse_options(argc, argv);
+    if (paramRet != 0) {
+        return 1;
+    }
     std::string dir("/data/meteo/storage");
     boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(writer_t::FILEDIR_WEEKLY, dir, message_type_t::BSON);
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);

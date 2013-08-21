@@ -11,7 +11,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 * make code safe and 'deploy' it
 * write some tests and docs
 * add logging!
-* move stuff out of headers where appropriate
 * lots of error checking!
 * check thread safety and queue clearing in writers
 * memory leak testing 
