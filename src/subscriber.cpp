@@ -42,10 +42,11 @@ int main (int argc, char** argv) {
     if (paramRet != 0) {
         return 1;
     }
-    std::string dir("/data/meteo/storage");
-    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(writer_t::FILEDIR_WEEKLY, dir, message_type_t::BSON);
+    //have to remove message_type_t argument from constructor
+    //also create a method to inform writer what type once the subscriber has done its req/rep cycle
+    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption(), message_type_t::BSON);
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
-    Subscriber s(w); 
+    Subscriber s(w, "tcp", sp.getPublishHostName(), sp.getPublishPort()); 
     boost::thread subThread(boost::ref(s));
     start_callbacks(f);
 

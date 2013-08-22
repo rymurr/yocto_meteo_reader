@@ -21,7 +21,16 @@ class SubscriberParams {
             set_options();
         }    
 
-         int parse_options(int argc, char** argv); 
+        int parse_options(int argc, char** argv); 
+        std::string getOption();
+        std::string getStorageDir();
+        std::string getMongoDbHost();
+        std::string getPublishHost();
+        std::string getPublishHostName();
+        writer_t getStorageFormat();
+        int getQueueSize();
+        int getPublishPort();
+
 };
 
 class PublisherParams {

@@ -7,7 +7,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 ##TODO:
 
 * add some command line options: list of sensors, which boxes, publish port
-* add cli options for recievers: message types, storage options
 * make code safe and 'deploy' it
 * write some tests and docs
 * add logging!
@@ -17,6 +16,7 @@ and its sent out to various interested parties (storage, live plotting etc)
 * add zero padding to filenames
 * increase number of values before a commit to file/mongo
 * write json storage message type
+* subscriber should have signal (ctrl-c) catching to empty queue before dying
 
 ##DEPLOY:
 
