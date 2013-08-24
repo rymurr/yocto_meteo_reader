@@ -94,6 +94,9 @@ std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::file
         case BSON:
             x=drain_to_mongo(bson_queue, p);
             break;
+        case INVALID:
+            x = 0;
+            break;    
         default:
             x = 0;
             std::cout << " FOO !" << std::endl;
@@ -101,16 +104,16 @@ std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::file
     return x;
 }
 
-void DiskWriter::drain(msgArr bson_queue) {
+int DiskWriter::drain(msgArr bson_queue) {
     boost::filesystem::path filename(_p);
     std::string file(_file_prefix);
     std::string dir=getDate();
     filename /= dir;
     make_path(filename);
     filename /= file.append(std::to_string(_count)).append(".bin").c_str();
-    drain_queue_to_file(bson_queue, filename);
+    const int x = drain_queue_to_file(bson_queue, filename);
     _count += 1;
-    return ;
+    return x;
 }
 
 /*
@@ -144,29 +147,30 @@ static std::vector<mongo::BSONObj> read_dir(const boost::filesystem::path &p) {
     return bson_queue;
 }*/
 
-ptrWriter WriterBuilder::create(writer_t writer_type, std::string option, message_type_t msg_type) {
+ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
     ptrWriter retVal;
     switch(writer_type) {
         case MONGO:
-            retVal = ptrWriter(new MongoWriter(option, msg_type));
+            retVal = ptrWriter(new MongoWriter(option));
             break;
         case FILEDIR_PERSISTENT:
-            retVal = ptrWriter(new PersistentDiskWriter(option, msg_type));
+            retVal = ptrWriter(new PersistentDiskWriter(option));
             break;    
         case FILEDIR_WEEKLY:
-            retVal = ptrWriter(new WeeklyRotateWriter(option, msg_type));
+            retVal = ptrWriter(new WeeklyRotateWriter(option));
             break;    
         default:
             retVal = NULL;
     }
     return retVal;
 }
-void MongoWriter::drain(msgArr msgs) {
+int MongoWriter::drain(msgArr msgs) {
     mongo::DBClientConnection c;
     c.connect(_hostname);
     for (std::size_t i=0;i<msgs.size();++i) {
         std::cout << "inserting " << msgs[i]->string() << std::endl;
         c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(msgs[i])->obj());
     }
+    return 1;
 }
 

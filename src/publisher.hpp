@@ -8,8 +8,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
+#include <boost/log/trivial.hpp>
 
-#include "glog/logging.h"
 #include "sensor.hpp"
 #include "zhelpers.hpp"
 #include "message.hpp"
@@ -28,6 +28,7 @@ class Publisher{
     public:
         Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON):_context(1),
                              _publisher(_context, ZMQ_PUB){
+             BOOST_LOG_TRIVIAL(info) << "Starting Publusher on port " << port;                                
              _publisher.bind(connect_name(protocol, hostname, port).c_str());
              std::string msg = make_msg(msg_type);
              startThread(protocol, hostname, port+1, msg);
@@ -39,6 +40,7 @@ class Publisher{
         }
 
         void startThread(std::string& protocol, std::string& hostname, int port, std::string msg) {
+            BOOST_LOG_TRIVIAL(info) << "Starting Req/Rep listener with reply message: " << msg << " on port " << port;
             _rep_thread = boost::thread(threaded_rep, connect_name(protocol, hostname, port), msg);         
             _rep_thread.detach();
         }

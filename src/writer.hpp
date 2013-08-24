@@ -18,26 +18,28 @@ enum writer_t {MONGO, FILEDIR_WEEKLY, FILEDIR_PERSISTENT};
 typedef std::vector<boost::shared_ptr<Message> > msgArr;
 class AbstractWriter {
     public:
-        virtual void drain(msgArr) = 0;
+        virtual int drain(msgArr) = 0;
         virtual void clear() = 0;
+        virtual void setMsgType(message_type_t) = 0;
 };
 
 typedef boost::shared_ptr<AbstractWriter> ptrWriter; 
 
 class WriterBuilder {
     public:
-        static ptrWriter create(writer_t writer_type, std::string option, message_type_t msg_type);
+        static ptrWriter create(writer_t writer_type, std::string option);
 };
 
 class MongoWriter: public AbstractWriter {
     private: 
         const std::string _hostname;
-        const message_type_t _msg_type;
+        message_type_t _msg_type;
 
     public:
-        MongoWriter(std::string& hostname, message_type_t msg_type): _hostname(hostname), _msg_type(msg_type){}
+        MongoWriter(std::string& hostname): _hostname(hostname), _msg_type(INVALID){}
     
-        virtual void drain(msgArr);
+        virtual void setMsgType(message_type_t msg_type) { _msg_type = msg_type;}
+        virtual int drain(msgArr);
         virtual void clear(){};
 
 
@@ -46,7 +48,7 @@ class MongoWriter: public AbstractWriter {
 class DiskWriter: public AbstractWriter {
     private:
         const std::string _file_prefix;
-        const message_type_t _msg_type;
+        message_type_t _msg_type;
 
         int find_current_count();
         
@@ -56,22 +58,23 @@ class DiskWriter: public AbstractWriter {
         const boost::filesystem::path _p;
 
     public:
-        DiskWriter(std::string filepath, message_type_t msg_type): _file_prefix("meteo"), _msg_type(msg_type), _p(filepath) {
+        DiskWriter(std::string filepath): _file_prefix("meteo"), _msg_type(INVALID), _p(filepath) {
             _count = find_current_count();
         }    
 
-        virtual void drain(msgArr);
+        virtual void setMsgType(message_type_t t) { _msg_type = t;}
+        virtual int drain(msgArr);
 };
 
 class PersistentDiskWriter: public DiskWriter {
     public:
-        PersistentDiskWriter(std::string filepath, message_type_t msg_type): DiskWriter(filepath, msg_type){}
+        PersistentDiskWriter(std::string filepath): DiskWriter(filepath){}
         virtual void clear();
 };
 
 class WeeklyRotateWriter: public DiskWriter {
     public:
-        WeeklyRotateWriter(std::string filepath, message_type_t msg_type): DiskWriter(filepath, msg_type){}
+        WeeklyRotateWriter(std::string filepath): DiskWriter(filepath){}
         virtual void clear();
     private:
         void rotate();    

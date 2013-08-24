@@ -16,13 +16,16 @@ SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING "Choose the type of bui
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.54.0 COMPONENTS system filesystem program_options thread-mt)
+ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
+find_package(Boost 1.54.0 COMPONENTS log-mt log_setup-mt system filesystem program_options thread-mt)
 include_directories(${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 
-find_package(Glog)
-include_directories(${Glog_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${Glog_LIBRARIES} -lglog)
+find_package(GooglePerfTools)
+if(GOOGLE_PERFTOOLS_FOUND)
+    include_directories(${GOOGLE_PERFTOOLS_INCLUDE_DIR})
+    set(LIBS ${LIBS} ${TCMALLOC_LIBRARIES} ${STACKTRACE_LIBRARIES} ${PROFILER_LIBRARIES})
+endif(GOOGLE_PERFTOOLS_FOUND)
 
 find_package(libusb-1.0)
 set(LIBS ${LIBS} ${LIBUSB_1_LIBRARIES})

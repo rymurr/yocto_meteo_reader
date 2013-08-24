@@ -2,7 +2,6 @@
 
 int main(int argc, char * argv[])
 {
-    google::InitGoogleLogging(argv[0]);
     PublisherParams pp;
     const int paramRet = pp.parse_options(argc, argv);
     if (paramRet != 0) {
@@ -25,7 +24,8 @@ void threaded_rep(std::string hostname, std::string msg){
     zmq::socket_t sync(context, ZMQ_REP);
     sync.bind(hostname.c_str());
     while(1) {
-        s_recv(sync);
+        std::string rec = s_recv(sync);
+        BOOST_LOG_TRIVIAL(info) << "recieved req/rep message from: " << rec;
         s_send(sync, msg);
     }
 }

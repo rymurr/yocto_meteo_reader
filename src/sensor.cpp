@@ -17,7 +17,7 @@ SensorGroup::SensorGroup() {
 int SensorGroup::start() {
     std::string errmsg;
     if (YAPI::RegisterHub("usb", errmsg) != YAPI::SUCCESS) {
-        LOG(ERROR) << "RegisterHub error : " << errmsg;
+        BOOST_LOG_TRIVIAL(error) << "RegisterHub error : " << errmsg;
         return 1;
     }
 
@@ -44,12 +44,12 @@ void TypedSensor<T>::addToQueue(T *fct, const std::string& value) {
 }
 
 void SensorGroup::_deviceArrival(YModule *m) {
-    LOG(INFO) << "Device arrival: " << m->describe() ;
+    BOOST_LOG_TRIVIAL(info) << "Device arrival: " << m->describe() ;
     int fctcount = m->functionCount();
 
     std::set<std::string>::const_iterator dit = _allowed_devices.find(m->get_serialNumber());
     if (!_allowed_devices.empty() && dit==_allowed_devices.end()) {
-        LOG(WARNING) << "Device not in list! Ignoring: " << m->get_serialNumber();            
+        BOOST_LOG_TRIVIAL(warning) << "Device not in list! Ignoring: " << m->get_serialNumber();            
         return;
     }
     for (int i = 0; i < fctcount; i++) {
@@ -58,12 +58,12 @@ void SensorGroup::_deviceArrival(YModule *m) {
 
         std::map<std::string, int>::const_iterator it = _sensors.find(fctName);
         if (it==_sensors.end()) {
-            LOG(ERROR) << "Could not find sensor! " << fctFullName;
+            BOOST_LOG_TRIVIAL(error) << "Could not find sensor! " << fctFullName;
             continue;
         }
         std::set<std::string>::const_iterator sit = _allowed_sensors.find(fctName);
         if (!_allowed_sensors.empty() && sit==_allowed_sensors.end()) {
-            LOG(WARNING) << "Sensor not in list! Ignoring: " << fctName;
+            BOOST_LOG_TRIVIAL(warning) << "Sensor not in list! Ignoring: " << fctName;
             continue;
         }
 

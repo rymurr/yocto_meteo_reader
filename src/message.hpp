@@ -7,7 +7,7 @@
 #include <zhelpers.hpp>
 
 typedef boost::shared_ptr<zmq::message_t> msgPtr;
-enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT};
+enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT,INVALID};
 
 class Message{
     public:

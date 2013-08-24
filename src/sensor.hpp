@@ -14,6 +14,7 @@
 #include <map>
 #include <string>
 #include <boost/thread.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "yocto_api.h"
 #include "yocto_temperature.h"
@@ -21,12 +22,11 @@
 #include "yocto_pressure.h"
 
 #include "message.hpp"
-#include "glog/logging.h"
 
 #define BOOST_FILESYSTEM_VERSION 3
 
 static void log(const std::string& msg) {
-    LOG(INFO) << msg;
+    BOOST_LOG_TRIVIAL(info) << msg;
 }
 
 long long return_ms_from_epoch(const boost::posix_time::ptime&); 
@@ -43,7 +43,7 @@ class TypedSensor:public Sensor {
         const std::string _device, _function, _fullName;
         
         static void _callback(T *fct, const std::string& value) {
-            LOG(INFO) << fct->get_friendlyName() << " == " << value;
+            BOOST_LOG_TRIVIAL(info) << fct->get_friendlyName() << " == " << value;
             addToQueue(fct, value);
         }
 
@@ -53,7 +53,7 @@ class TypedSensor:public Sensor {
         virtual void start(){
             _sensor = boost::shared_ptr<T>(T::Find(_fullName));
             _sensor -> registerValueCallback(this->_callback);
-           LOG(INFO) << "Callback registered for: " << _fullName ;
+           BOOST_LOG_TRIVIAL(info) << "Callback registered for: " << _fullName ;
         } 
 
         /*  TODO
@@ -87,7 +87,7 @@ class SensorGroup {
         static void _deviceArrival(YModule *m) ;
 
         static void _deviceRemoval(YModule *m) {
-            LOG(INFO) << "Devince removal: " << m->get_serialNumber();
+            BOOST_LOG_TRIVIAL(info) << "Device removal: " << m->get_serialNumber();
         } 
 
         SensorGroup();
@@ -102,7 +102,7 @@ class SensorGroup {
         }
 
         void deviceRemoval(YModule *m) {
-            LOG(INFO) << "Devince removal: " << m->get_serialNumber();
+            BOOST_LOG_TRIVIAL(info) << "Device removal: " << m->get_serialNumber();
         }
         static void addToQueue(Message &r) {
             boost::mutex::scoped_lock(guard);

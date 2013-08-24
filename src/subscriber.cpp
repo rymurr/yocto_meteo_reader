@@ -1,12 +1,13 @@
 #include "subscriber.hpp"
 
-Subscriber::Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol, std::string host, int port): _context(1), _subscriber(_context, ZMQ_SUB), _sync(_context, ZMQ_REQ), _writer(writer), _max(2) {
+Subscriber::Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol, std::string host, int port, int max): _context(1), _subscriber(_context, ZMQ_SUB), _sync(_context, ZMQ_REQ), _writer(writer), _max(max) {
     _subscriber.connect(connect_name(protocol, host, port).c_str());
     _subscriber.setsockopt( ZMQ_SUBSCRIBE, "", 0);
     _sync.connect(connect_name(protocol, host, port+1).c_str());
     s_send(_sync,"");
     std::string conf_string = s_recv(_sync);
     _msg_type = parse_msg(conf_string);
+    writer->setMsgType(_msg_type);
 }   
 
 void Subscriber::operator()() {
@@ -31,8 +32,9 @@ message_type_t Subscriber::parse_msg(std::string& msg) {
 
 void Subscriber::drain_queue() {
     boost::mutex::scoped_lock(guard);
-    _writer->drain(_bson_queue);
-    _bson_queue.clear();
+    const int x = _writer->drain(_bson_queue);
+    if (x<0)
+        _bson_queue.clear();
 
 }
 
@@ -42,11 +44,9 @@ int main (int argc, char** argv) {
     if (paramRet != 0) {
         return 1;
     }
-    //have to remove message_type_t argument from constructor
-    //also create a method to inform writer what type once the subscriber has done its req/rep cycle
-    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption(), message_type_t::BSON);
+    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption());
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
-    Subscriber s(w, "tcp", sp.getPublishHostName(), sp.getPublishPort()); 
+    Subscriber s(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize()); 
     boost::thread subThread(boost::ref(s));
     start_callbacks(f);
 

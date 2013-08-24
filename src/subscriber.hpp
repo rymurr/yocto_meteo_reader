@@ -32,7 +32,7 @@ class Subscriber {
         std::size_t _max;
 
     public:
-        Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol="tcp", std::string host="localhost", int port=5563);
+        Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol="tcp", std::string host="localhost", int port=5563, int queue=2);
 
         void operator()(); 
 
