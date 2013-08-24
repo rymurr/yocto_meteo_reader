@@ -10,6 +10,8 @@
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/thread.hpp>
 #include "mongo/client/dbclient.h"
 #include "message.hpp"
 
@@ -34,6 +36,7 @@ class MongoWriter: public AbstractWriter {
     private: 
         const std::string _hostname;
         message_type_t _msg_type;
+        boost::mutex guard;
 
     public:
         MongoWriter(std::string& hostname): _hostname(hostname), _msg_type(INVALID){}
@@ -56,13 +59,17 @@ class DiskWriter: public AbstractWriter {
         std::size_t drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p); 
         int _count;
         const boost::filesystem::path _p;
+        boost::mutex guard;
 
     public:
         DiskWriter(std::string filepath): _file_prefix("meteo"), _msg_type(INVALID), _p(filepath) {
             _count = find_current_count();
         }    
 
-        virtual void setMsgType(message_type_t t) { _msg_type = t;}
+        virtual void setMsgType(message_type_t t) { 
+            _msg_type = t;
+            BOOST_LOG_TRIVIAL(info) << "Message type set to: " << t;
+        }
         virtual int drain(msgArr);
 };
 

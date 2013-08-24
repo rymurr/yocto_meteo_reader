@@ -10,6 +10,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/thread.hpp>
+#include <boost/log/trivial.hpp>
 #include <signal.h>
 #include "mongo/client/dbclient.h"
 #include "zhelpers.hpp"
@@ -17,6 +18,7 @@
 #include "writer.hpp"
 #include "daily_call.hpp"
 #include "param_helper.hpp"
+#include "logger_config.hpp"
 
 
 class Subscriber {

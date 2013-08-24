@@ -1,11 +1,14 @@
 #include "subscriber.hpp"
 
 Subscriber::Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol, std::string host, int port, int max): _context(1), _subscriber(_context, ZMQ_SUB), _sync(_context, ZMQ_REQ), _writer(writer), _max(max) {
+    BOOST_LOG_TRIVIAL(info) << "Subscribing to: " << connect_name(protocol, host, port);
     _subscriber.connect(connect_name(protocol, host, port).c_str());
     _subscriber.setsockopt( ZMQ_SUBSCRIBE, "", 0);
     _sync.connect(connect_name(protocol, host, port+1).c_str());
+    BOOST_LOG_TRIVIAL(info) << "Asking " << connect_name(protocol, host, port+1) << " for configuration";
     s_send(_sync,"");
     std::string conf_string = s_recv(_sync);
+    BOOST_LOG_TRIVIAL(info) << "Recieved: " << conf_string;
     _msg_type = parse_msg(conf_string);
     writer->setMsgType(_msg_type);
 }   
@@ -14,9 +17,10 @@ void Subscriber::operator()() {
     while (1) {
         std::string address = s_recv(_subscriber);
         boost::shared_ptr<Message> r = s_recvobj(_subscriber, _msg_type);
-        std::cout << r->string() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "Recieved: " << r->string();
         _bson_queue.push_back(r);
         if (_bson_queue.size() > _max) {
+            BOOST_LOG_TRIVIAL(info) << "Queue is full! Draining now";
             drain_queue();
         }
 
@@ -39,6 +43,7 @@ void Subscriber::drain_queue() {
 }
 
 int main (int argc, char** argv) {
+    init("subscriber");
     SubscriberParams sp;
     const int paramRet = sp.parse_options(argc, argv);
     if (paramRet != 0) {
@@ -49,6 +54,5 @@ int main (int argc, char** argv) {
     Subscriber s(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize()); 
     boost::thread subThread(boost::ref(s));
     start_callbacks(f);
-
     return 0;
 }

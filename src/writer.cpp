@@ -1,13 +1,17 @@
 #include "writer.hpp"
 
 static bool make_path(const boost::filesystem::path &p) {
+    BOOST_LOG_TRIVIAL(info) << "Trying to make file " << p;
     if (boost::filesystem::exists(p)) {
         if (boost::filesystem::is_directory(p)) {
+            BOOST_LOG_TRIVIAL(info) << "file exists and is a directory, we are good";
             return true;
         } else {
+            BOOST_LOG_TRIVIAL(error) << "file exists but is a file, cant save new messages!";
             return false;
         }
     } else {
+        BOOST_LOG_TRIVIAL(warning) << "directory does not exists, trying to create it";
         return boost::filesystem::create_directories(p);   
     }
 }
@@ -23,10 +27,14 @@ static std::string getDate() {
 }
 
 void PersistentDiskWriter::clear() {
+    boost::mutex::scoped_lock(guard);
+    BOOST_LOG_TRIVIAL(info) << "Reseting file count";
    _count=0; 
 }
 
 void WeeklyRotateWriter::clear() {
+    boost::mutex::scoped_lock(guard);
+    BOOST_LOG_TRIVIAL(info) << "Reseting file count and rotating";
     _count=0; 
     rotate();
 }
@@ -34,6 +42,7 @@ void WeeklyRotateWriter::clear() {
 void WeeklyRotateWriter::rotate() {
     boost::posix_time::ptime mindate(boost::gregorian::day_clock::universal_day()-boost::gregorian::date_duration(7));
     boost::filesystem::directory_iterator end_itr;
+    BOOST_LOG_TRIVIAL(info) << "Attempting to delete old/stale messages";
     for (boost::filesystem::directory_iterator itr(_p); itr != end_itr; ++itr) {
         boost::posix_time::ptime pt;
         std::string fname = itr->path().string();
@@ -45,7 +54,10 @@ void WeeklyRotateWriter::rotate() {
         is >> pt;
         if (pt != boost::posix_time::ptime()) {
             if (pt < mindate){
+                BOOST_LOG_TRIVIAL(warning) << "Removing the file: " << itr->path().string();
                 boost::filesystem::remove_all(itr->path());
+            } else {
+                BOOST_LOG_TRIVIAL(info) << "Keeping the file: " << itr->path().string();
             }
         }
 
@@ -79,7 +91,7 @@ static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::pa
     outfile = std::fopen(p.string().c_str(), "w");
     mongo::BSONArrayBuilder b;
     for (std::size_t i=0;i<bson_queue.size();++i) {
-        std::cout << "writing " << bson_queue[i]->string() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "writing " << bson_queue[i]->string();
         //all thats left is to handle the binary (on disk) format for general data types.
         b.append(boost::static_pointer_cast<MongoMessage>(bson_queue[i])->obj());
     }
@@ -99,7 +111,6 @@ std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::file
             break;    
         default:
             x = 0;
-            std::cout << " FOO !" << std::endl;
     }
     return x;
 }
@@ -110,7 +121,9 @@ int DiskWriter::drain(msgArr bson_queue) {
     std::string dir=getDate();
     filename /= dir;
     make_path(filename);
-    filename /= file.append(std::to_string(_count)).append(".bin").c_str();
+    std::string cntStr = std::to_string(_count);
+    std::string padCount=std::string("0",5-cntStr.length()).append(cntStr);
+    filename /= file.append(padCount).append(".bin").c_str();
     const int x = drain_queue_to_file(bson_queue, filename);
     _count += 1;
     return x;
@@ -168,7 +181,7 @@ int MongoWriter::drain(msgArr msgs) {
     mongo::DBClientConnection c;
     c.connect(_hostname);
     for (std::size_t i=0;i<msgs.size();++i) {
-        std::cout << "inserting " << msgs[i]->string() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "inserting " << msgs[i]->string();
         c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(msgs[i])->obj());
     }
     return 1;

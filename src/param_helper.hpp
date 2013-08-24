@@ -2,6 +2,7 @@
 #define __PARAM_HELPER_HPP__
 
 #include <boost/program_options.hpp>
+#include <boost/log/trivial.hpp>
 #include <vector>
 #include "writer.hpp"
 #include "message.hpp"
