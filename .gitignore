@@ -11,3 +11,4 @@ Makefile
 *.pb.*
 *.swp
 data
+*.log
