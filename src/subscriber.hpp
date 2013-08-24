@@ -1,6 +1,7 @@
 #ifndef __SUBSCRIBER_HPP__
 #define __SUBSCRIBER_HPP__
 
+#include <signal.h>
 #include <vector>
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -11,7 +12,10 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/thread.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/function.hpp>
 #include <signal.h>
+#include "google/heap-checker.h"
+#include "mongo/client/dbclient.h"
 #include "mongo/client/dbclient.h"
 #include "zhelpers.hpp"
 #include "message.hpp"
@@ -42,6 +46,20 @@ class Subscriber {
 
         void drain_queue() ;
         
+
+};
+
+class SubControl {
+    private:
+        boost::shared_ptr<Subscriber> _s;
+        void sigill();
+        void sigint();
+
+    public:
+        SubControl(boost::shared_ptr<Subscriber> s): _s(s) {}
+        SubControl() {}
+
+        void intHandler(int sig);
 
 };
 

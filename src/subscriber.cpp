@@ -42,8 +42,39 @@ void Subscriber::drain_queue() {
 
 }
 
+void SubControl::sigill(){
+    BOOST_LOG_TRIVIAL(warning) << "Attempting to run a heap check";
+    HeapLeakChecker::NoGlobalLeaks();    
+    return;
+};
+
+void SubControl::sigint(){
+    BOOST_LOG_TRIVIAL(fatal) << "Recieved sigint! Goodbye!";
+    _s->drain_queue();
+    exit(1);
+};
+
+void SubControl::intHandler(int sig) {
+    switch(sig) {
+        case 2:
+            sigint();
+            break;
+        case 4:
+            sigill();
+            break;
+        default:
+            BOOST_LOG_TRIVIAL(error) << "Unable to handle signal!";
+    }
+};
+
+SubControl sc;
+void intHandler(int sig){
+    sc.intHandler(sig);
+}
+
 int main (int argc, char** argv) {
     init("subscriber");
+
     SubscriberParams sp;
     const int paramRet = sp.parse_options(argc, argv);
     if (paramRet != 0) {
@@ -51,8 +82,12 @@ int main (int argc, char** argv) {
     }
     boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption());
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
-    Subscriber s(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize()); 
-    boost::thread subThread(boost::ref(s));
+    boost::shared_ptr<Subscriber> s = boost::shared_ptr<Subscriber>(new Subscriber(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize())); 
+    sc = SubControl(s);
+    signal(SIGINT, intHandler);
+    signal(SIGILL, intHandler);
+
+    boost::thread subThread(boost::ref(*s));
     start_callbacks(f);
     return 0;
 }

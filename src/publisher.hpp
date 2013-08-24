@@ -1,6 +1,7 @@
 #ifndef _PUBLISHER_HPP_
 #define _PUBLISHER_HPP_
 
+#include <signal.h>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -10,6 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/log/trivial.hpp>
 
+#include <google/heap-checker.h>
 #include "logger_config.hpp"
 #include "sensor.hpp"
 #include "zhelpers.hpp"
@@ -47,6 +49,20 @@ class Publisher{
         }
 
         std::string make_msg(message_type_t);
+
+};
+
+class PubControl {
+    private:
+        boost::shared_ptr<Publisher> _s;
+        void sigill();
+        void sigint();
+
+    public:
+        PubControl(boost::shared_ptr<Publisher> s): _s(s) {}
+        PubControl() {}
+
+        void intHandler(int sig);
 
 };
 

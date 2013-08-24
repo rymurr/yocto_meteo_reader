@@ -1,5 +1,33 @@
 #include "publisher.hpp"
 
+void PubControl::sigill(){
+    BOOST_LOG_TRIVIAL(warning) << "Attempting to run a heap check";
+    HeapLeakChecker::NoGlobalLeaks();    
+    return;
+};
+
+void PubControl::sigint(){
+    BOOST_LOG_TRIVIAL(fatal) << "Recieved sigint! Goodbye!";
+    exit(1);
+};
+
+void PubControl::intHandler(int sig) {
+    switch(sig) {
+        case 2:
+            sigint();
+            break;
+        case 4:
+            sigill();
+            break;
+        default:
+            BOOST_LOG_TRIVIAL(error) << "Unable to handle signal!";
+    }
+};
+
+PubControl sc;
+void intHandler(int sig){
+    sc.intHandler(sig);
+}
 
 int main(int argc, char * argv[])
 {
@@ -11,6 +39,9 @@ int main(int argc, char * argv[])
     }
     boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
     boost::function<void (Message&)> fct = boost::bind<void>(&Publisher::callback, y, _1);
+    sc = PubControl(y);
+    signal(SIGINT, intHandler);
+    signal(SIGILL, intHandler);
     BOOST_FOREACH(std::string x, pp.getDevices()) {
         SensorGroup::getInstance().addAllowedDevice(x);
     }

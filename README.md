@@ -9,9 +9,7 @@ and its sent out to various interested parties (storage, live plotting etc)
 * make code safe and 'deploy' it
 * write some tests and docs
 * lots of error checking!
-* memory leak testing 
 * write json storage message type
-* subscriber should have signal (ctrl-c) catching to empty queue before dying
 
 ##DEPLOY:
 
