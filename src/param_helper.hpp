@@ -2,6 +2,7 @@
 #define __PARAM_HELPER_HPP__
 
 #include <boost/program_options.hpp>
+#include <vector>
 #include "writer.hpp"
 #include "message.hpp"
 
@@ -47,6 +48,11 @@ class PublisherParams {
         }    
 
         int parse_options(int argc, char** argv); 
+        std::vector<std::string> getDevices();
+        std::vector<std::string> getSensorTypes();
+        message_type_t getMessageType();
+        int getPort();
+
 };
 
 #endif

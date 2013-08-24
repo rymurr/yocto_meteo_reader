@@ -24,7 +24,13 @@ std::istream& operator>>(std::istream& in, message_type_t& unit)
 }
 
 void PublisherParams::set_options() {
-
+    _desc.add_options()
+        ("help", "produce help message")
+        ("msg-type,m", po::value<message_type_t>()->default_value(BSON), "message type")
+        ("port,p", po::value<int>()->default_value(5563), "Publish port")
+        ("types,t", po::value<std::vector<std::string> >()->composing(), "sensor types")
+        ("devices,d", po::value<std::vector<std::string> >()->composing(), "device names")
+        ;
 }
 
 void SubscriberParams::set_options() {
@@ -39,6 +45,26 @@ void SubscriberParams::set_options() {
         ("port,p", po::value<int>()->default_value(5563), "Server port")
         ("hostname,h", po::value<std::string>()->default_value("localhost"), "Server host")
     ;
+}
+
+message_type_t PublisherParams::getMessageType(){
+    return _vm["msg-type"].as<message_type_t>();
+}
+
+int PublisherParams::getPort(){
+    return _vm["port"].as<int>();
+}
+
+std::vector<std::string> PublisherParams::getSensorTypes() {
+    if (_vm.count("types"))
+        return _vm["types"].as<std::vector<std::string> >();
+    return std::vector<std::string>();
+}
+
+std::vector<std::string> PublisherParams::getDevices() {
+    if (_vm.count("devices"))
+        return _vm["devices"].as<std::vector<std::string> >();
+    return std::vector<std::string>();
 }
 
 int PublisherParams::verify() {

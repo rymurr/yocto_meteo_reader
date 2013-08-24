@@ -7,11 +7,13 @@
 #include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 
 #include "glog/logging.h"
 #include "sensor.hpp"
 #include "zhelpers.hpp"
 #include "message.hpp"
+#include "param_helper.hpp"
 
 
 void threaded_rep(std::string, std::string);

@@ -80,6 +80,8 @@ class SensorGroup {
     private:
         static std::map<std::string, int> _sensors;
         static std::set<boost::shared_ptr<Sensor> > _devices;
+        static std::set<std::string> _allowed_devices;
+        static std::set<std::string> _allowed_sensors;
         static boost::mutex guard;
 
         static void _deviceArrival(YModule *m) ;
@@ -114,6 +116,14 @@ class SensorGroup {
 
         void addCallback(readingCallback &x) {
             _callbacks.push_back(x);
+        }
+
+        void addAllowedSensor(std::string x) {
+            _allowed_sensors.insert(x);
+        }
+
+        void addAllowedDevice(std::string x) {
+            _allowed_devices.insert(x);
         }
 
 

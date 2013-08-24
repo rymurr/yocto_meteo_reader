@@ -1,6 +1,8 @@
 #include "sensor.hpp"
 
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
+std::set<std::string> SensorGroup::_allowed_devices = std::set<std::string>();
+std::set<std::string> SensorGroup::_allowed_sensors = std::set<std::string>();
 std::map<std::string, int> SensorGroup::_sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
 std::vector<readingCallback> SensorGroup::_callbacks = std::vector<readingCallback>();
 
@@ -45,6 +47,11 @@ void SensorGroup::_deviceArrival(YModule *m) {
     LOG(INFO) << "Device arrival: " << m->describe() ;
     int fctcount = m->functionCount();
 
+    std::set<std::string>::const_iterator dit = _allowed_devices.find(m->get_serialNumber());
+    if (!_allowed_devices.empty() && dit==_allowed_devices.end()) {
+        LOG(WARNING) << "Device not in list! Ignoring: " << m->get_serialNumber();            
+        return;
+    }
     for (int i = 0; i < fctcount; i++) {
         std::string fctName = m->functionId(i);
         std::string fctFullName = m->get_serialNumber() + "." + fctName;
@@ -52,6 +59,11 @@ void SensorGroup::_deviceArrival(YModule *m) {
         std::map<std::string, int>::const_iterator it = _sensors.find(fctName);
         if (it==_sensors.end()) {
             LOG(ERROR) << "Could not find sensor! " << fctFullName;
+            continue;
+        }
+        std::set<std::string>::const_iterator sit = _allowed_sensors.find(fctName);
+        if (!_allowed_sensors.empty() && sit==_allowed_sensors.end()) {
+            LOG(WARNING) << "Sensor not in list! Ignoring: " << fctName;
             continue;
         }
 

@@ -6,7 +6,6 @@ and its sent out to various interested parties (storage, live plotting etc)
 
 ##TODO:
 
-* add some command line options: list of sensors, which boxes, publish port
 * make code safe and 'deploy' it
 * write some tests and docs
 * add logging!

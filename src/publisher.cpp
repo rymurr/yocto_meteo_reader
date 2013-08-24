@@ -1,10 +1,21 @@
 #include "publisher.hpp"
 
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
     google::InitGoogleLogging(argv[0]);
-    boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher());
+    PublisherParams pp;
+    const int paramRet = pp.parse_options(argc, argv);
+    if (paramRet != 0) {
+        return 1;
+    }
+    boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
     boost::function<void (Message&)> fct = boost::bind<void>(&Publisher::callback, y, _1);
+    BOOST_FOREACH(std::string x, pp.getDevices()) {
+        SensorGroup::getInstance().addAllowedDevice(x);
+    }
+    BOOST_FOREACH(std::string x, pp.getSensorTypes()) {
+        SensorGroup::getInstance().addAllowedSensor(x);
+    }
     SensorGroup::getInstance().addCallback(fct);
     SensorGroup::getInstance().start();
 }
