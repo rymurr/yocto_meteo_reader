@@ -11,7 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/log/trivial.hpp>
 
-#include <google/heap-checker.h>
+//#include <google/heap-checker.h>
 #include "logger_config.hpp"
 #include "sensor.hpp"
 #include "zhelpers.hpp"

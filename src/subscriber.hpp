@@ -14,7 +14,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/function.hpp>
 #include <signal.h>
-#include "google/heap-checker.h"
+//#include "google/heap-checker.h"
 #include "mongo/client/dbclient.h"
 #include "mongo/client/dbclient.h"
 #include "zhelpers.hpp"

@@ -43,8 +43,8 @@ void Subscriber::drain_queue() {
 }
 
 void SubControl::sigill(){
-    BOOST_LOG_TRIVIAL(warning) << "Attempting to run a heap check";
-    HeapLeakChecker::NoGlobalLeaks();    
+    //BOOST_LOG_TRIVIAL(warning) << "Attempting to run a heap check";
+    //HeapLeakChecker::NoGlobalLeaks();    
     return;
 };
 
