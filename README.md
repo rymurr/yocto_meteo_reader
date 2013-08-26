@@ -9,7 +9,9 @@ and its sent out to various interested parties (storage, live plotting etc)
 * make code safe and 'deploy' it
 * write some tests and docs
 * lots of error checking!
-* write json storage message type
+* write json,protobuf storage message type and their conversions
+* make message stuff more flexible 
+* add cli argument for message out type
 
 ##DEPLOY:
 
@@ -19,4 +21,4 @@ and its sent out to various interested parties (storage, live plotting etc)
 * shipping to server/mongo db
 * script to recover data on rpi in case server is down
 * should always be running on server
-* get wifi working on rpi
+* mongo doesn't compile on arm...have to fix up message types
