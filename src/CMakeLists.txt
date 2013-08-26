@@ -4,6 +4,7 @@ include_directories (.)
 include_directories(../yocto)
 
 link_libraries(${LIBS} -lpthread )
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS meteo.proto)
 set(EXECUTABLE_OUTPUT_PATH "../")
 add_executable(pub_meteo publisher.cpp sensor.cpp param_helper.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 add_executable(sub_meteo subscriber.cpp writer.cpp daily_call.cpp param_helper.cpp ${PROTO_SRCS} ${PROTO_HDRS})

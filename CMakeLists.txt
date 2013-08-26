@@ -38,6 +38,10 @@ find_package(ZMQ)
 include_directories(${ZMQ_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${ZMQ_LIBRARIES})
 
+find_package(Protobuf)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
+
 add_subdirectory(src)
 #add_subdirectory(test)
 add_subdirectory(yocto)
