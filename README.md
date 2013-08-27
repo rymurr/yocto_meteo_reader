@@ -12,6 +12,8 @@ and its sent out to various interested parties (storage, live plotting etc)
 * write json,protobuf storage message type and their conversions
 * make message stuff more flexible 
 * add cli argument for message out type
+* compile flags around Mongo stuff (and protobuf?)
+* auto generate help string for msg types/file types based on available libraries
 
 ##DEPLOY:
 
@@ -22,3 +24,4 @@ and its sent out to various interested parties (storage, live plotting etc)
 * script to recover data on rpi in case server is down
 * should always be running on server
 * mongo doesn't compile on arm...have to fix up message types
+

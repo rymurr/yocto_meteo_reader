@@ -41,8 +41,10 @@ boost::shared_ptr<Message> convertToJSON(boost::shared_ptr<Message> m, message_t
             msg = m;
             break;
         case PROTOBUF:
+            msg = boost::make_shared<Message>(JSONMessage(const_cast<char*>(m->string().c_str())));
             break;
         case BSON:
+            msg = boost::make_shared<Message>(JSONMessage(const_cast<char*>(m->string().c_str())));
             break;
         default:
             msg = NULL;
