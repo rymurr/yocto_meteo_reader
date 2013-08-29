@@ -32,6 +32,8 @@ static void log(const std::string& msg) {
 long long return_ms_from_epoch(const boost::posix_time::ptime&); 
 
 class Sensor {
+    protected:
+        static message_type_t _msg_type;
     public:
         virtual void start() {};
 };
@@ -48,7 +50,8 @@ class TypedSensor:public Sensor {
         }
 
     public:
-        TypedSensor(const std::string& device, const std::string& function): _device(device), _function(function), _fullName(device + "." + function) {
+        TypedSensor(const std::string& device, const std::string& function, message_type_t msg_type): _device(device), _function(function), _fullName(device + "." + function) {
+            _msg_type = msg_type; 
         }
         virtual void start(){
             _sensor = boost::shared_ptr<T>(T::Find(_fullName));
@@ -68,8 +71,8 @@ typedef TypedSensor<YHumidity> HumiditySensor;
 typedef TypedSensor<YPressure> PressureSensor;
 
 template <class T>
-boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
-    T x(m->get_serialNumber(), fctName);
+boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName, message_type_t msg_type){
+    T x(m->get_serialNumber(), fctName, msg_type);
     x.start();
     return boost::make_shared<T>(x);
 };
@@ -82,6 +85,7 @@ class SensorGroup {
         static std::set<boost::shared_ptr<Sensor> > _devices;
         static std::set<std::string> _allowed_devices;
         static std::set<std::string> _allowed_sensors;
+        static message_type_t _msg_type;
         static boost::mutex guard;
 
         static void _deviceArrival(YModule *m) ;
@@ -101,14 +105,15 @@ class SensorGroup {
             return s;
         }
 
+        static void setMsgType(message_type_t m) { _msg_type = m;}
         void deviceRemoval(YModule *m) {
             BOOST_LOG_TRIVIAL(info) << "Device removal: " << m->get_serialNumber();
         }
-        static void addToQueue(Message &r) {
+        static void addToQueue(boost::shared_ptr<Message> r) {
             boost::mutex::scoped_lock(guard);
             //for_each(_callbacks.begin(), _callbacks.end(), boost::bind<void>(&readingCallback::operator(),_1,r));
             for (int i=0;i<_callbacks.size();++i) {
-                _callbacks[i](r);
+                _callbacks[i](*r);
             }
         }
 

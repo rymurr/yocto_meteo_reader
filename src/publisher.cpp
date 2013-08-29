@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
     sc = PubControl(y);
     signal(SIGINT, intHandler);
     signal(SIGILL, intHandler);
+    SensorGroup::getInstance().setMsgType(pp.getMessageType());
     BOOST_FOREACH(std::string x, pp.getDevices()) {
         SensorGroup::getInstance().addAllowedDevice(x);
     }

@@ -12,7 +12,7 @@ class ProtoBufMessage: public Message {
     private:
         meteo::SensorReading _obj;
     public:
-        ProtoBufMessage(std::string& device, std::string& sensor, long long timestamp, double value) {
+        ProtoBufMessage(std::string device, std::string sensor, long long timestamp, double value) {
             _obj.set_value(value); 
             _obj.set_device(device);
             _obj.set_sensor(sensor);

@@ -20,6 +20,10 @@ std::istream& operator>>(std::istream& in, message_type_t& unit)
     in >> token;
     if (token == "bson")
         unit = BSON;
+    else if (token == "json")
+        unit = JSON;
+    else if (token == "protobuf")
+        unit = PROTOBUF;
     return in;
 }
 

@@ -87,6 +87,8 @@ int DiskWriter::find_current_count() {
 }
 
 static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p) {
+    std::size_t x = -1;
+    #ifdef MONGO
     FILE * outfile;
     outfile = std::fopen(p.string().c_str(), "w");
     mongo::BSONArrayBuilder b;
@@ -96,8 +98,13 @@ static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::pa
         b.append(boost::static_pointer_cast<MongoMessage>(bson_queue[i])->obj());
     }
     mongo::BSONArray arr = b.arr();
-    std::size_t x = std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
+    x = std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
+    #endif
     return x;
+}
+
+static std::size_t drain_to_json(msgArr bson_queue, const boost::filesystem::path &p) {
+
 }
 
 std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p) {
@@ -105,6 +112,9 @@ std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::file
     switch(_msg_type) {
         case BSON:
             x=drain_to_mongo(bson_queue, p);
+            break;
+        case JSON:
+            x=drain_to_json(bson_queue, p);
             break;
         case INVALID:
             x = 0;
@@ -178,12 +188,14 @@ ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
     return retVal;
 }
 int MongoWriter::drain(msgArr msgs) {
+    #ifdef MONGO
     mongo::DBClientConnection c;
     c.connect(_hostname);
     for (std::size_t i=0;i<msgs.size();++i) {
         BOOST_LOG_TRIVIAL(info) << "inserting " << msgs[i]->string();
         c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(msgs[i])->obj());
     }
+    #endif
     return 1;
 }
 

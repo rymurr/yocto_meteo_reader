@@ -8,7 +8,7 @@ class MongoMessage : public Message {
     private:
         mongo::BSONObj _obj;
     public:
-        MongoMessage(std::string& device, std::string& sensor, long long timestamp, double value) {
+        MongoMessage(std::string device, std::string sensor, long long timestamp, double value) {
             mongo::BSONObjBuilder b;
             b.append("value", value);
             b.append("device", device);

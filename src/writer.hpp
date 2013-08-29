@@ -12,7 +12,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
+#ifdef MONGO
 #include "mongo/client/dbclient.h"
+#endif
 #include "message.hpp"
 
 enum writer_t {MONGO, FILEDIR_WEEKLY, FILEDIR_PERSISTENT};
