@@ -48,6 +48,7 @@ void SubscriberParams::set_options() {
         ("mongo-port", po::value<int>()->default_value(27017), "Mongo server port")
         ("port,p", po::value<int>()->default_value(5563), "Server port")
         ("hostname,h", po::value<std::string>()->default_value("localhost"), "Server host")
+        ("storage-format,f", po::value<message_type_t>()->default_value(JSON))
     ;
 }
 

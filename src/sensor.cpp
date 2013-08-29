@@ -1,6 +1,5 @@
 #include "sensor.hpp"
 
-message_type_t Sensor::_msg_type;
 message_type_t SensorGroup::_msg_type;
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 std::set<std::string> SensorGroup::_allowed_devices = std::set<std::string>();
@@ -41,7 +40,7 @@ void TypedSensor<T>::addToQueue(T *fct, const std::string& value) {
     boost::split(strs, name, boost::is_any_of("."));
     boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
 
-    boost::shared_ptr<Message> reading = make_message(strs[0], strs[1], return_ms_from_epoch(now), boost::lexical_cast<double>(value), _msg_type);
+    boost::shared_ptr<Message> reading = make_message(strs[0], strs[1], return_ms_from_epoch(now), boost::lexical_cast<double>(value), SensorGroup::_msg_type);
     SensorGroup::addToQueue(reading);
 }
 
@@ -72,13 +71,13 @@ void SensorGroup::_deviceArrival(YModule *m) {
         const int sensorVal = _sensors[fctName];
         switch(sensorVal) {
             case 1:
-                _devices.insert(sensorHelper<TemperatureSensor>(m, fctName, _msg_type));
+                _devices.insert(sensorHelper<TemperatureSensor>(m, fctName));
                 break;
             case 2:
-                _devices.insert(sensorHelper<HumiditySensor>(m, fctName, _msg_type));
+                _devices.insert(sensorHelper<HumiditySensor>(m, fctName));
                 break;
             case 3:
-                 _devices.insert(sensorHelper<PressureSensor>(m, fctName, _msg_type));
+                 _devices.insert(sensorHelper<PressureSensor>(m, fctName));
                 break;
         }
     }

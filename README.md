@@ -9,11 +9,10 @@ and its sent out to various interested parties (storage, live plotting etc)
 * make code safe and 'deploy' it
 * write some tests and docs
 * lots of error checking!
-* write json,protobuf storage message type and their conversions
-* make message stuff more flexible 
-* add cli argument for message out type
-* compile flags around Mongo stuff (and protobuf?)
+* finish adding storage message type, need to integrate into subscriber and writer and force conversion
+* compile flags around Mongo stuff (and protobuf?). Test mongo, do protobuf
 * auto generate help string for msg types/file types based on available libraries
+* add yocto lib as a submodule
 
 ##DEPLOY:
 
@@ -23,5 +22,4 @@ and its sent out to various interested parties (storage, live plotting etc)
 * shipping to server/mongo db
 * script to recover data on rpi in case server is down
 * should always be running on server
-* mongo doesn't compile on arm...have to fix up message types
 

@@ -4,6 +4,7 @@
 #include <mongo/client/dbclient.h>
 #include "base_message.hpp"
 
+#ifdef MONGO
 class MongoMessage : public Message {
     private:
         mongo::BSONObj _obj;
@@ -35,5 +36,14 @@ class MongoMessage : public Message {
 
         const mongo::BSONObj obj(){return _obj;}
 };
-
+#else
+class MongoMessage: public Message {
+    public:
+        MongoMessage(std::string device, std::string sensor, long long timestamp, double value) {};
+        MongoMessage(char* data){};
+        virtual msgPtr fllmessage(){ return NULL;};
+        virtual std::string id() { return "";};
+        virtual std::string string() {return "";};
+};
+#endif
 #endif
