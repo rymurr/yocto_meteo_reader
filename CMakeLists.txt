@@ -47,7 +47,7 @@ set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
 
 add_subdirectory(src)
 #add_subdirectory(test)
-add_subdirectory(yocto)
+add_subdirectory(yoctolib_cpp)
 enable_testing()
 
 
