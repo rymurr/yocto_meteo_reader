@@ -42,8 +42,11 @@ include_directories(${ZMQ_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${ZMQ_LIBRARIES})
 
 find_package(Protobuf)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
-set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
+if(Protobuf_FOUND)
+    include_directories(${PROTOBUF_INCLUDE_DIRS})
+    set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
+    ADD_DEFINITIONS(-DPROTOBUF_AVAIL)
+endif(Protobuf_FOUND)    
 
 add_subdirectory(src)
 #add_subdirectory(test)

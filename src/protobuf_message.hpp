@@ -6,6 +6,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/shared_ptr.hpp>
 #include "base_message.hpp"
+
+#ifdef PROTOBUF_AVAIL
 #include "meteo.pb.h"
 
 class ProtoBufMessage: public Message {
@@ -44,5 +46,15 @@ class ProtoBufMessage: public Message {
         }
         
 };
+#else
+class ProtoBufMessage: public Message {
+    public:
+        ProtoBufMessage(std::string device, std::string sensor, long long timestamp, double value) {};
+        ProtoBufMessage(char* data){};
+        virtual msgPtr fillmessage(){ return NULL;};
+        virtual std::string id() { return "";};
+        virtual std::string string() {return "";};
+};
+#endif
 
 #endif
