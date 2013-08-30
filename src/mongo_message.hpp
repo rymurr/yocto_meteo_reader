@@ -41,7 +41,7 @@ class MongoMessage: public Message {
     public:
         MongoMessage(std::string device, std::string sensor, long long timestamp, double value) {};
         MongoMessage(char* data){};
-        virtual msgPtr fllmessage(){ return NULL;};
+        virtual msgPtr fillmessage(){ return NULL;};
         virtual std::string id() { return "";};
         virtual std::string string() {return "";};
 };

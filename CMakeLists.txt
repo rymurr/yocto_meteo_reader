@@ -31,8 +31,11 @@ find_package(libusb-1.0)
 set(LIBS ${LIBS} ${LIBUSB_1_LIBRARIES})
 
 find_package(MongoDB)
-include_directories(${MongoDB_INCLUDE_DIR})
-set(LIBS ${LIBS} ${MongoDB_LIBRARIES})
+if(MongoDB_FOUND)
+    include_directories(${MongoDB_INCLUDE_DIR})
+    set(LIBS ${LIBS} ${MongoDB_LIBRARIES})
+    ADD_DEFINITIONS(-DMONGO)
+endif(MongoDB_FOUND)    
 
 find_package(ZMQ)
 include_directories(${ZMQ_INCLUDE_DIRS})
