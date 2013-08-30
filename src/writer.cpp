@@ -88,7 +88,7 @@ int DiskWriter::find_current_count() {
 
 static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p) {
     std::size_t x = -1;
-    #ifdef MONGO
+    #ifdef MONGO_AVAIL
     FILE * outfile;
     outfile = std::fopen(p.string().c_str(), "w");
     mongo::BSONArrayBuilder b;
@@ -188,7 +188,7 @@ ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
     return retVal;
 }
 int MongoWriter::drain(msgArr msgs) {
-    #ifdef MONGO
+    #ifdef MONGO_AVAIL
     mongo::DBClientConnection c;
     c.connect(_hostname);
     for (std::size_t i=0;i<msgs.size();++i) {

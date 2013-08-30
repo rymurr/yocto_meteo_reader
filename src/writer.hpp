@@ -12,7 +12,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
-#ifdef MONGO
+#ifdef MONGO_AVAIL
 #include "mongo/client/dbclient.h"
 #endif
 #include "message.hpp"

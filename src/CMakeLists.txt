@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 
 include_directories (.)
-include_directories(../yocto)
+include_directories(../yoctolib_cpp/Sources)
 
 link_libraries(${LIBS} -lpthread )
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS meteo.proto)

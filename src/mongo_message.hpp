@@ -4,7 +4,7 @@
 #include <mongo/client/dbclient.h>
 #include "base_message.hpp"
 
-#ifdef MONGO
+#ifdef MONGO_AVAIL
 class MongoMessage : public Message {
     private:
         mongo::BSONObj _obj;

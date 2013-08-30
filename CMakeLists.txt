@@ -34,7 +34,7 @@ find_package(MongoDB)
 if(MongoDB_FOUND)
     include_directories(${MongoDB_INCLUDE_DIR})
     set(LIBS ${LIBS} ${MongoDB_LIBRARIES})
-    ADD_DEFINITIONS(-DMONGO)
+    ADD_DEFINITIONS(-DMONGO_AVAIL)
 endif(MongoDB_FOUND)    
 
 find_package(ZMQ)
@@ -47,7 +47,7 @@ set(LIBS ${LIBS} ${PROTOBUF_LIBRARIES})
 
 add_subdirectory(src)
 #add_subdirectory(test)
-add_subdirectory(yoctolib_cpp)
+add_subdirectory(yoctolib_cpp/Sources)
 enable_testing()
 
 
