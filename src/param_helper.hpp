@@ -30,6 +30,7 @@ class SubscriberParams {
         std::string getPublishHost();
         std::string getPublishHostName();
         writer_t getStorageFormat();
+        message_type_t getStorageType();
         int getQueueSize();
         int getPublishPort();
 

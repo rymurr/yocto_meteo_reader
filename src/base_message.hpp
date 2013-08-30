@@ -13,6 +13,7 @@ class Message{
         virtual msgPtr fillmessage() = 0;
         virtual std::string id() = 0;
         virtual std::string string() = 0;
+        
 };
 
 static void msg_free(void *data, void *hint) {}

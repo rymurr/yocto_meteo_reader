@@ -29,13 +29,13 @@ static std::string getDate() {
 void PersistentDiskWriter::clear() {
     boost::mutex::scoped_lock(guard);
     BOOST_LOG_TRIVIAL(info) << "Reseting file count";
-   _count=0; 
+    find_current_count(); 
 }
 
 void WeeklyRotateWriter::clear() {
     boost::mutex::scoped_lock(guard);
     BOOST_LOG_TRIVIAL(info) << "Reseting file count and rotating";
-    _count=0; 
+    find_current_count(); 
     rotate();
 }
 
@@ -71,7 +71,7 @@ int DiskWriter::find_current_count() {
     filename /= dir;
     make_path(filename);
     boost::filesystem::directory_iterator end_itr;
-    int x(0);
+    int x(-1);
     for (boost::filesystem::directory_iterator itr(filename); itr != end_itr; ++itr) {
         std::string fname = itr->path().string();
         boost::replace_first(fname, filename.string(), "");
@@ -83,10 +83,12 @@ int DiskWriter::find_current_count() {
             x = c;
         }
     }
+    x += 1;
+    BOOST_LOG_TRIVIAL(info) << "Starting files from " << x;
     return x;
 }
 
-static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p) {
+static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p, message_type_t msg_type) {
     std::size_t x = -1;
     #ifdef MONGO_AVAIL
     FILE * outfile;
@@ -95,7 +97,7 @@ static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::pa
     for (std::size_t i=0;i<bson_queue.size();++i) {
         BOOST_LOG_TRIVIAL(info) << "writing " << bson_queue[i]->string();
         //all thats left is to handle the binary (on disk) format for general data types.
-        b.append(boost::static_pointer_cast<MongoMessage>(bson_queue[i])->obj());
+        b.append(boost::static_pointer_cast<MongoMessage>(convert(bson_queue[i],msg_type, BSON))->obj());
     }
     mongo::BSONArray arr = b.arr();
     x = std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
@@ -103,18 +105,27 @@ static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::pa
     return x;
 }
 
-static std::size_t drain_to_json(msgArr bson_queue, const boost::filesystem::path &p) {
-
+static std::size_t drain_to_json(msgArr bson_queue, const boost::filesystem::path &p, message_type_t msg_type) {
+    std::size_t x = 0;
+    std::ofstream fout;
+    fout.open(p.string().c_str());
+    for (std::size_t i=0;i<bson_queue.size();++i) {
+        BOOST_LOG_TRIVIAL(info) << "writing " << convert(bson_queue[i],msg_type,JSON)->string();
+        fout << bson_queue[i]->string() << "\n";
+        x+=1;
+    }
+    fout.close();
+    return x;
 }
 
 std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p) {
     std::size_t x;
-    switch(_msg_type) {
+    switch(_msg_type_store) {
         case BSON:
-            x=drain_to_mongo(bson_queue, p);
+            x=drain_to_mongo(bson_queue, p, _msg_type);
             break;
         case JSON:
-            x=drain_to_json(bson_queue, p);
+            x=drain_to_json(bson_queue, p, _msg_type);
             break;
         case INVALID:
             x = 0;
@@ -131,9 +142,10 @@ int DiskWriter::drain(msgArr bson_queue) {
     std::string dir=getDate();
     filename /= dir;
     make_path(filename);
-    std::string cntStr = std::to_string(_count);
-    std::string padCount=std::string("0",5-cntStr.length()).append(cntStr);
-    filename /= file.append(padCount).append(".bin").c_str();
+    std::stringstream ss;
+    ss << boost::format("%05i") % _count;
+    std::string cntStr = ss.str();
+    filename /= file.append(cntStr).append(".bin");
     const int x = drain_queue_to_file(bson_queue, filename);
     _count += 1;
     return x;
@@ -193,7 +205,7 @@ int MongoWriter::drain(msgArr msgs) {
     c.connect(_hostname);
     for (std::size_t i=0;i<msgs.size();++i) {
         BOOST_LOG_TRIVIAL(info) << "inserting " << msgs[i]->string();
-        c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(msgs[i])->obj());
+        c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(convert(msgs[i],_msg_type,BSON))->obj());
     }
     #endif
     return 1;

@@ -1,6 +1,6 @@
 
 #include "message.hpp"
-boost::shared_ptr<Message> convertToMongo(boost::shared_ptr<Message> m, message_type_t intype, message_type_t outtype) {
+boost::shared_ptr<Message> convert(boost::shared_ptr<Message> m, message_type_t intype, message_type_t outtype) {
     boost::shared_ptr<Message> msg;
     switch(outtype) {
         case JSON:

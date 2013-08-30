@@ -52,6 +52,10 @@ void SubscriberParams::set_options() {
     ;
 }
 
+message_type_t SubscriberParams::getStorageType() {
+    return _vm["storage-format"].as<message_type_t>();
+}
+
 message_type_t PublisherParams::getMessageType(){
     return _vm["msg-type"].as<message_type_t>();
 }

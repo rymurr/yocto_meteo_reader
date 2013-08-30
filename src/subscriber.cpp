@@ -81,6 +81,7 @@ int main (int argc, char** argv) {
         return 1;
     }
     boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption());
+    w->setMsgTypeStore(sp.getStorageType());
     boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
     boost::shared_ptr<Subscriber> s = boost::shared_ptr<Subscriber>(new Subscriber(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize())); 
     sc = SubControl(s);

@@ -12,6 +12,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
+#include <boost/format.hpp>
 #ifdef MONGO_AVAIL
 #include "mongo/client/dbclient.h"
 #endif
@@ -25,6 +26,7 @@ class AbstractWriter {
         virtual int drain(msgArr) = 0;
         virtual void clear() = 0;
         virtual void setMsgType(message_type_t) = 0;
+        virtual void setMsgTypeStore(message_type_t) =0;
 };
 
 typedef boost::shared_ptr<AbstractWriter> ptrWriter; 
@@ -44,6 +46,7 @@ class MongoWriter: public AbstractWriter {
         MongoWriter(std::string& hostname): _hostname(hostname), _msg_type(INVALID){}
     
         virtual void setMsgType(message_type_t msg_type) { _msg_type = msg_type;}
+        virtual void setMsgTypeStore(message_type_t msg_type) {}
         virtual int drain(msgArr);
         virtual void clear(){};
 
@@ -54,10 +57,11 @@ class DiskWriter: public AbstractWriter {
     private:
         const std::string _file_prefix;
         message_type_t _msg_type;
+        message_type_t _msg_type_store;
 
-        int find_current_count();
         
     protected:    
+        int find_current_count();
         std::size_t drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p); 
         int _count;
         const boost::filesystem::path _p;
@@ -68,6 +72,7 @@ class DiskWriter: public AbstractWriter {
             _count = find_current_count();
         }    
 
+        virtual void setMsgTypeStore(message_type_t msg_type) { _msg_type_store = msg_type;}
         virtual void setMsgType(message_type_t t) { 
             _msg_type = t;
             BOOST_LOG_TRIVIAL(info) << "Message type set to: " << t;
