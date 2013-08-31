@@ -9,7 +9,7 @@ if(Protobuf_FOUND)
 endif(Protobuf_FOUND)
 
 set(EXECUTABLE_OUTPUT_PATH "../")
-add_executable(pub_meteo publisher.cpp sensor.cpp param_helper.cpp message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
+add_executable(pub_meteo publisher.cpp sensor.cpp sensor_group.cpp param_helper.cpp message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 add_executable(sub_meteo subscriber.cpp writer.cpp daily_call.cpp param_helper.cpp message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(sub_meteo yocto ${LIBUSB_1_LIBRARIES})
 target_link_libraries(pub_meteo yocto ${LIBUSB_1_LIBRARIES})
