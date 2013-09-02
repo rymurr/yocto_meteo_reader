@@ -3,7 +3,6 @@
 #define _SENSOR_GROUP_HPP_
 
 #include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/assign/list_of.hpp>
 #include <set>
 #include <map>
@@ -11,20 +10,19 @@
 #include <boost/thread.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "yocto_api.h"
-
-#include "message.hpp"
 #include "sensor.hpp"
 
 #define BOOST_FILESYSTEM_VERSION 3
+
+class Message;
 
 typedef boost::function<void (Message&)> readingCallback;
 
 template <class T>
 boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
-    T x(m->get_serialNumber(), fctName);
-    x.start();
-    return boost::make_shared<T>(x);
+    boost::shared_ptr<T> x(new T(m->get_serialNumber(), fctName));
+    x->start();
+    return x;
 };
 
 

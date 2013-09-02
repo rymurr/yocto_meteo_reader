@@ -17,7 +17,7 @@ SET( CMAKE_BUILD_TYPE "${CMAKE_BUILD_TYPE}" CACHE STRING "Choose the type of bui
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
-find_package(Boost 1.54.0 COMPONENTS log-mt log_setup-mt system filesystem program_options thread-mt)
+find_package(Boost 1.54.0 COMPONENTS log log_setup system filesystem program_options thread)
 include_directories(${Boost_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${Boost_LIBRARIES})
 

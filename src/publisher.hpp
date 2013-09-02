@@ -1,23 +1,22 @@
 #ifndef _PUBLISHER_HPP_
 #define _PUBLISHER_HPP_
 
+#include <string>
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-#include <sstream>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
 #include <boost/log/trivial.hpp>
 #include <zmq.hpp>
 
-//#include <google/heap-checker.h>
-#include "logger_config.hpp"
-#include "sensor.hpp"
-#include "message.hpp"
-#include "param_helper.hpp"
-#include "publisher_control.hpp"
-#include "threaded_reqrep.hpp"
+#include "base_message.hpp"
+
+std::string make_msg(message_type_t);
+
+void threaded_rep(std::string, std::string);
+
+static std::string    
+connect_name(std::string protocol, std::string host, int port) {
+    return protocol.append("://").append(host).append(":").append(std::to_string(port));
+}
 
 class Publisher{
 
@@ -27,18 +26,8 @@ class Publisher{
         boost::thread _rep_thread;
         
     public:
-        Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON):_context(1),
-                             _publisher(_context, ZMQ_PUB){
-             BOOST_LOG_TRIVIAL(info) << "Starting Publusher on port " << port;                                
-             _publisher.bind(connect_name(protocol, hostname, port).c_str());
-             std::string msg = make_msg(msg_type);
-             startThread(protocol, hostname, port+1, msg);
-        }
-        void callback(Message& x) {
-             s_sendmore(_publisher,x.id());
-             s_sendobj(_publisher, x);
-             sleep(1);
-        }
+        Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON);
+        void callback(Message& x) ;
 
         void startThread(std::string& protocol, std::string& hostname, int port, std::string msg) {
             BOOST_LOG_TRIVIAL(info) << "Starting Req/Rep listener with reply message: " << msg << " on port " << port;
@@ -46,7 +35,6 @@ class Publisher{
             _rep_thread.detach();
         }
 
-        std::string make_msg(message_type_t);
 
 };
 

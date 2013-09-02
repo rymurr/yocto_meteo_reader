@@ -1,5 +1,8 @@
 
 #include "sensor_group.hpp"
+#include "yocto_api.h"
+#include "base_message.hpp"
+
 message_type_t SensorGroup::_msg_type;
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 std::set<std::string> SensorGroup::_allowed_devices = std::set<std::string>();

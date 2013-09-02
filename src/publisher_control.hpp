@@ -4,6 +4,8 @@
 #include <signal.h>
 #include <boost/shared_ptr.hpp>
 
+class Publisher; 
+
 class PubControl {
     private:
         boost::shared_ptr<Publisher> _s;

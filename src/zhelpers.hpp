@@ -54,10 +54,6 @@
 //  Provide random number from 0..(num-1)
 #define within(num) (int) ((float) (num) * random () / (RAND_MAX + 1.0))
 
-static std::string    
-connect_name(std::string protocol, std::string host, int port) {
-    return protocol.append("://").append(host).append(":").append(std::to_string(port));
-}
 //  Receive 0MQ string from socket and convert into string
 static std::string
 s_recv (zmq::socket_t & socket) {

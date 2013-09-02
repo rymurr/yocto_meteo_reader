@@ -3,7 +3,7 @@
 
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include "zhelpers.hpp"
+#include <zmq.hpp>
 
 enum message_type_t {BSON,JSON,PROTOBUF,PLAINTEXT,INVALID};
 typedef boost::shared_ptr<zmq::message_t> msgPtr;

@@ -1,44 +1,18 @@
 #include "publisher.hpp"
+#include "zhelpers.hpp"
 
-
-PubControl sc;
-void intHandler(int sig){
-    sc.intHandler(sig);
+void threaded_rep(std::string hostname, std::string msg){
+    zmq::context_t context(1);
+    zmq::socket_t sync(context, ZMQ_REP);
+    sync.bind(hostname.c_str());
+    while(1) {
+        std::string rec = s_recv(sync);
+        BOOST_LOG_TRIVIAL(info) << "recieved req/rep message from: " << rec;
+        s_send(sync, msg);
+    }
 }
 
-int main(int argc, char * argv[])
-{
-    init("publisher");
-    PublisherParams pp;
-    const int paramRet = pp.parse_options(argc, argv);
-    if (paramRet != 0) {
-        return 1;
-    }
-    boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
-    boost::function<void (Message&)> fct = boost::bind<void>(&Publisher::callback, y, _1);
-    sc = PubControl(y);
-    signal(SIGINT, intHandler);
-    signal(SIGILL, intHandler);
-    SensorGroup::getInstance().setMsgType(pp.getMessageType());
-    BOOST_FOREACH(std::string x, pp.getDevices()) {
-        SensorGroup::getInstance().addAllowedDevice(x);
-    }
-    BOOST_FOREACH(std::string x, pp.getSensorTypes()) {
-        SensorGroup::getInstance().addAllowedSensor(x);
-    }
-    SensorGroup::getInstance().addCallback(fct);
-    SensorGroup::getInstance().start();
-}
-
-std::string Publisher::make_msg(message_type_t msg_type) {
-    boost::property_tree::ptree pt;
-    pt.put("type", msg_type);
-    std::ostringstream buf;
-    boost::property_tree::write_json(buf, pt, false);
-    return buf.str();
-}
-
-Publisher::Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON):_context(1),
+Publisher::Publisher(std::string hostname, int port, std::string protocol, message_type_t msg_type):_context(1),
                      _publisher(_context, ZMQ_PUB){
      BOOST_LOG_TRIVIAL(info) << "Starting Publusher on port " << port;                                
      _publisher.bind(connect_name(protocol, hostname, port).c_str());
