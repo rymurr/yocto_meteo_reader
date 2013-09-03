@@ -13,6 +13,7 @@
 #include <boost/log/sinks.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/empty_deleter.hpp>
+#include <boost/make_shared.hpp>
 #include "logger_config.cpp"
 
 static void init(std::string fname) {
