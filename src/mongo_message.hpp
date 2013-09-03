@@ -1,10 +1,10 @@
 #ifndef _MONGO_MESSAGE_HPP_
 #define _MONGO_MESSAGE_HPP_
 
-#include <mongo/client/dbclient.h>
 #include "base_message.hpp"
 
 #ifdef MONGO_AVAIL
+#include <mongo/client/dbclient.h>
 class MongoMessage : public Message {
     private:
         mongo::BSONObj _obj;

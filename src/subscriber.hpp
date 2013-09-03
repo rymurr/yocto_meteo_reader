@@ -15,8 +15,6 @@
 #include <boost/function.hpp>
 #include <signal.h>
 //#include "google/heap-checker.h"
-#include "mongo/client/dbclient.h"
-#include "mongo/client/dbclient.h"
 #include "zhelpers.hpp"
 #include "message.hpp"
 #include "writer.hpp"

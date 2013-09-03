@@ -4,9 +4,9 @@ include_directories (.)
 include_directories(../yoctolib_cpp/Sources)
 
 link_libraries(${LIBS} -lpthread )
-if(Protobuf_FOUND)
+if(PROTOBUF_FOUND)
     PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS meteo.proto)
-endif(Protobuf_FOUND)
+endif(PROTOBUF_FOUND)
 
 set(EXECUTABLE_OUTPUT_PATH "../")
 add_executable(pub_meteo pmain.cpp publisher_control.cpp threaded_reqrep.cpp publisher_make_msg.cpp publisher.cpp sensor.cpp sensor_group.cpp pub_param_helper.cpp message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
