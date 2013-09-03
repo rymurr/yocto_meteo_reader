@@ -11,15 +11,6 @@
 #include "protobuf_message.hpp"
 #include "json_message.hpp"
 
-static bool
-s_sendobj (zmq::socket_t & socket, Message& obj) {
-
-    msgPtr message = obj.fillmessage();
-
-    bool rc = socket.send (*message);
-    return (rc);
-}
-
 static boost::shared_ptr<Message>
 s_recvobj (zmq::socket_t & socket, message_type_t msg_type) {
 

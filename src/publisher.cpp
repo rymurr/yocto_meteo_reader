@@ -1,6 +1,42 @@
 #include "publisher.hpp"
-#include "zhelpers.hpp"
-#include "message.hpp"
+
+static bool
+s_send (zmq::socket_t & socket, const std::string & string) {
+
+    zmq::message_t message(string.size());
+    memcpy (message.data(), string.data(), string.size());
+
+    bool rc = socket.send (message);
+    return (rc);
+}
+
+static bool
+s_sendmore (zmq::socket_t & socket, const std::string & string) {
+
+    zmq::message_t message(string.size());
+    memcpy (message.data(), string.data(), string.size());
+
+    bool rc = socket.send (message, ZMQ_SNDMORE);
+    return (rc);
+}
+
+static std::string
+s_recv (zmq::socket_t & socket) {
+
+    zmq::message_t message;
+    socket.recv(&message);
+
+    return std::string(static_cast<char*>(message.data()), message.size());
+}
+
+static bool
+s_sendobj (zmq::socket_t & socket, Message& obj) {
+
+    msgPtr message = obj.fillmessage();
+
+    bool rc = socket.send (*message);
+    return (rc);
+}
 
 void threaded_rep(std::string hostname, std::string msg){
     zmq::context_t context(1);
