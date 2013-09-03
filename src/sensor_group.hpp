@@ -10,13 +10,16 @@
 #include <boost/thread.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "sensor.hpp"
+#include "base_message.hpp"
+#include "yocto_api.h"
+
 
 #define BOOST_FILESYSTEM_VERSION 3
 
 class Message;
+class Sensor;
 
-typedef boost::function<void (Message&)> readingCallback;
+typedef boost::function<void (boost::shared_ptr<Message>)> readingCallback;
 
 template <class T>
 boost::shared_ptr<T> sensorHelper(YModule *m, std::string& fctName){
@@ -45,25 +48,20 @@ class SensorGroup {
         SensorGroup(const SensorGroup&);
         void operator=(const SensorGroup&);
 
-        static std::vector<readingCallback> _callbacks;
     public:
-        static message_type_t _msg_type;
         static SensorGroup& getInstance() {
             static SensorGroup s;
             return s;
         }
 
-        static void setMsgType(message_type_t m) { _msg_type = m;}
+        static void setMsgType(message_type_t m) ;
         void deviceRemoval(YModule *m) {
             BOOST_LOG_TRIVIAL(info) << "Device removal: " << m->get_serialNumber();
         }
-        static void addToQueue(boost::shared_ptr<Message> r) ;
 
         int start();
 
-        void addCallback(readingCallback &x) {
-            _callbacks.push_back(x);
-        }
+        void addCallback(readingCallback &x) ;
 
         void addAllowedSensor(std::string x) {
             _allowed_sensors.insert(x);

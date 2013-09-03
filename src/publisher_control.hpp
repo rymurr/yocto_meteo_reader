@@ -3,6 +3,7 @@
 
 #include <signal.h>
 #include <boost/shared_ptr.hpp>
+#include <boost/log/trivial.hpp>
 
 class Publisher; 
 

@@ -1,5 +1,6 @@
 #include "publisher.hpp"
 #include "zhelpers.hpp"
+#include "message.hpp"
 
 void threaded_rep(std::string hostname, std::string msg){
     zmq::context_t context(1);
@@ -19,9 +20,9 @@ Publisher::Publisher(std::string hostname, int port, std::string protocol, messa
      std::string msg = make_msg(msg_type);
      startThread(protocol, hostname, port+1, msg);
 }
-void Publisher::callback(Message& x) {
-     s_sendmore(_publisher,x.id());
-     s_sendobj(_publisher, x);
+void Publisher::callback(boost::shared_ptr<Message> x) {
+     s_sendmore(_publisher,x->id());
+     s_sendobj(_publisher, *x);
      sleep(1);
 }
 

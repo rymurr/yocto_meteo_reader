@@ -5,7 +5,7 @@
 #include <signal.h>
 #include "logger_config.hpp"
 #include "sensor_group.hpp"
-#include "param_helper.hpp"
+#include "pub_param_helper.hpp"
 #include "publisher_control.hpp"
 #include "publisher.hpp"
 
@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
         return 1;
     }
     boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
-    boost::function<void (Message&)> fct = boost::bind<void>(&Publisher::callback, y, _1);
+    boost::function<void (boost::shared_ptr<Message>)> fct = boost::bind<void>(&Publisher::callback, y, _1);
     sc = PubControl(y);
     signal(SIGINT, intHandler);
     signal(SIGILL, intHandler);

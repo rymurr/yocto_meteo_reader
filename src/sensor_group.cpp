@@ -1,14 +1,11 @@
 
 #include "sensor_group.hpp"
-#include "yocto_api.h"
-#include "base_message.hpp"
+#include "sensor.hpp"
 
-message_type_t SensorGroup::_msg_type;
 std::set<boost::shared_ptr<Sensor> > SensorGroup::_devices = std::set<boost::shared_ptr<Sensor> >();
 std::set<std::string> SensorGroup::_allowed_devices = std::set<std::string>();
 std::set<std::string> SensorGroup::_allowed_sensors = std::set<std::string>();
 std::map<std::string, int> SensorGroup::_sensors = boost::assign::map_list_of("temperature", 1)("humidity", 2)("pressure", 3);
-std::vector<readingCallback> SensorGroup::_callbacks = std::vector<readingCallback>();
 
 static void log(const std::string& msg) {
     BOOST_LOG_TRIVIAL(info) << msg;
@@ -21,6 +18,9 @@ SensorGroup::SensorGroup() {
     YAPI::DisableExceptions();
 
 };
+
+void SensorGroup::addCallback(readingCallback &x) {Sensor::addCallback(x);};
+void SensorGroup::setMsgType(message_type_t msg){Sensor::msg_type(msg);}
 
 int SensorGroup::start() {
     std::string errmsg;
@@ -75,11 +75,4 @@ void SensorGroup::_deviceArrival(YModule *m) {
     }
 }
 
-void SensorGroup::addToQueue(boost::shared_ptr<Message> r) {
-    boost::mutex::scoped_lock(guard);
-    //for_each(_callbacks.begin(), _callbacks.end(), boost::bind<void>(&readingCallback::operator(),_1,r));
-    for (int i=0;i<_callbacks.size();++i) {
-        _callbacks[i](*r);
-    }
-}
 

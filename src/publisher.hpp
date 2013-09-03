@@ -27,13 +27,9 @@ class Publisher{
         
     public:
         Publisher(std::string hostname="*", int port=5563, std::string protocol="tcp", message_type_t msg_type=BSON);
-        void callback(Message& x) ;
+        void callback(boost::shared_ptr<Message> x) ;
 
-        void startThread(std::string& protocol, std::string& hostname, int port, std::string msg) {
-            BOOST_LOG_TRIVIAL(info) << "Starting Req/Rep listener with reply message: " << msg << " on port " << port;
-            _rep_thread = boost::thread(threaded_rep, connect_name(protocol, hostname, port), msg);         
-            _rep_thread.detach();
-        }
+        void startThread(std::string& protocol, std::string& hostname, int port, std::string msg) ;
 
 
 };

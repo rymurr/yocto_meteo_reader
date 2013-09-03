@@ -1,11 +1,11 @@
-#ifndef __PARAM_HELPER_HPP__
-#define __PARAM_HELPER_HPP__
+#ifndef __SUB_PARAM_HELPER_HPP__
+#define __SUB_PARAM_HELPER_HPP__
 
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
-#include <vector>
 #include "writer.hpp"
-#include "message.hpp"
+#include "base_message.hpp"
+#include "msg_operator.hpp"
 
 
 namespace po = boost::program_options;
@@ -33,27 +33,6 @@ class SubscriberParams {
         message_type_t getStorageType();
         int getQueueSize();
         int getPublishPort();
-
-};
-
-class PublisherParams {
-    private:
-        po::options_description _desc;
-        po::variables_map _vm;
-
-        void set_options();
-        int verify();
-
-    public:
-        PublisherParams(): _desc("Weather Publisher options") {
-            set_options();
-        }    
-
-        int parse_options(int argc, char** argv); 
-        std::vector<std::string> getDevices();
-        std::vector<std::string> getSensorTypes();
-        message_type_t getMessageType();
-        int getPort();
 
 };
 
