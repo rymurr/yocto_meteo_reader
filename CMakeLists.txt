@@ -7,7 +7,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     #set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -mllvm -debug -Wall -march=armv6 -marm -mfloat-abi=hard -std=c++11")
     #set ( CMAKE_CXX_FLAGS_RELEASE  "-O3 " )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    set ( CMAKE_CXX_FLAGS "-O3 -Wall -march=armv6 -marm -mfloat-abi=hard -std=c++11"
+    set ( CMAKE_CXX_FLAGS "-O3 -Wall -march=armv6 -marm -mfloat-abi=hard -std=c++11")
     set ( CMAKE_C_FLAGS "-O3 -Wall -march=armv6 -marm -mfloat-abi=hard ")
     #set ( CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -pg -p -Wall -march=armv6 -marm -mfloat-abi=hard -std=c++11")    
     #set ( CMAKE_CXX_FLAGS_RELEASE  "-O3 " )
