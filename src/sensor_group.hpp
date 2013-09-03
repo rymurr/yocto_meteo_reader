@@ -7,7 +7,6 @@
 #include <set>
 #include <map>
 #include <string>
-#include <boost/thread.hpp>
 #include <boost/log/trivial.hpp>
 
 #include "base_message.hpp"
@@ -36,7 +35,6 @@ class SensorGroup {
         static std::set<boost::shared_ptr<Sensor> > _devices;
         static std::set<std::string> _allowed_devices;
         static std::set<std::string> _allowed_sensors;
-        static boost::mutex guard;
 
         static void _deviceArrival(YModule *m) ;
 

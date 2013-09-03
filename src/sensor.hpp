@@ -7,6 +7,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/thread.hpp>
 
 #include "yocto_temperature.h"
 #include "yocto_humidity.h"
@@ -24,6 +25,7 @@ class Sensor {
     protected:
         static message_type_t _msg_type;
         static std::vector<readingCallback> _callbacks;
+        static boost::mutex guard;
     public:
         virtual void start() {};
         static void msg_type(message_type_t msg) {_msg_type = msg;};
