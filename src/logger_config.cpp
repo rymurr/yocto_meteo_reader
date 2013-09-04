@@ -14,9 +14,9 @@
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/empty_deleter.hpp>
 #include <boost/make_shared.hpp>
-#include "logger_config.cpp"
+#include "logger_config.hpp"
 
-static void init(std::string fname) {
+void init(std::string fname) {
     boost::log::add_common_attributes();
     boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 
