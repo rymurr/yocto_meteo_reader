@@ -8,6 +8,7 @@
 #include <zmq.hpp>
 
 #include "base_message.hpp"
+#include <string>
 
 std::string make_msg(message_type_t);
 

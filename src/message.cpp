@@ -13,7 +13,7 @@ boost::shared_ptr<Message> convert(boost::shared_ptr<Message> m, message_type_t 
             msg = convertToProtoBuf(m, intype);
             break;
         default:
-            msg = NULL;
+            msg = boost::shared_ptr<Message>();
     }
     return msg;
 }
@@ -34,7 +34,7 @@ boost::shared_ptr<Message> convertToMongo(boost::shared_ptr<Message> m, message_
             msg = m;
             break;
         default:
-            msg = NULL;
+            msg = boost::shared_ptr<Message>();
     }
     return msg;    
 }
@@ -52,7 +52,7 @@ boost::shared_ptr<Message> convertToJSON(boost::shared_ptr<Message> m, message_t
             msg = boost::make_shared<JSONMessage>(JSONMessage(const_cast<char*>(m->string().c_str())));
             break;
         default:
-            msg = NULL;
+            msg = boost::shared_ptr<Message>();
     }
     return msg;    
 }
@@ -73,7 +73,7 @@ boost::shared_ptr<Message> convertToProtoBuf(boost::shared_ptr<Message> m, messa
             msg = boost::shared_ptr<Message>(new ProtoBufMessage(x->id(), x->device(), x->timestamp(), x->value()));
             break;
         default:
-            msg = NULL;
+            msg = boost::shared_ptr<Message>();
     }
     return msg;    
 }
@@ -91,7 +91,7 @@ boost::shared_ptr<Message> make_message(std::string sensor, std::string device, 
             msg = boost::shared_ptr<Message>(new ProtoBufMessage(sensor, device, timestamp, value));
             break;
         default:
-            msg = NULL;    
+            msg = boost::shared_ptr<Message>();    
     }
     return msg;
 }

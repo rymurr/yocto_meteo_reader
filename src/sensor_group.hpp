@@ -3,6 +3,7 @@
 #define _SENSOR_GROUP_HPP_
 
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 #include <boost/assign/list_of.hpp>
 #include <set>
 #include <map>

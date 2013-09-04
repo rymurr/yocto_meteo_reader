@@ -29,7 +29,7 @@ s_recvobj (zmq::socket_t & socket, message_type_t msg_type) {
             m = boost::make_shared<JSONMessage>(JSONMessage(static_cast<char*>(message.data())));
             break;
         default:
-            m = NULL;    
+            m = boost::shared_ptr<Message>();    
     }
     return m;
 }
