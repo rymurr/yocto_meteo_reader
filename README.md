@@ -26,4 +26,5 @@ Works on x86 w/o a problem for all message types and intputs/outputs. Currently 
 * shipping to server/mongo db
 * script to recover data on rpi in case server is down
 * should always be running on server
+* change device name on rpi
 
