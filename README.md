@@ -4,15 +4,23 @@ temperature, humidity, pressure sensor USB stick
 The library publishes the data onto a zmq pub bus
 and its sent out to various interested parties (storage, live plotting etc)
 
+##STATUS:
+Works on x86 w/o a problem for all message types and intputs/outputs. Currently some problems on arm:
+
+* cant build bson message type
+* extremely limited compile time resources: long compilation time and poor logging configuration
+
+
 ##TODO:
 
 * make code safe and 'deploy' it
 * write some tests and docs
 * lots of error checking!
+* finish refactor of subscriber and build on arm
+* build on electron
 
 ##DEPLOY:
 
-* build on arm
 * always running on rpi
 * rotating data removal on rpi
 * shipping to server/mongo db
