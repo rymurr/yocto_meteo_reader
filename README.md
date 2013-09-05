@@ -28,3 +28,11 @@ Works on x86 w/o a problem for all message types and intputs/outputs. Currently 
 * should always be running on server
 * change device name on rpi
 
+##Extensions:
+
+* make python subscriber
+* build website
+* make auto-config more or config from web page
+* add more modules
+ 
+
