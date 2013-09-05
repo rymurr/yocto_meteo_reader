@@ -1,3 +1,4 @@
+#ifndef ARMV6_BUILD
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -9,9 +10,11 @@
 #include <boost/log/utility/empty_deleter.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/trivial.hpp>
+#endif
 #include "logger_config.hpp"
 
 void init_console() {
+    #ifndef ARMV6_BUILD
     boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 
     boost::shared_ptr< boost::log::sinks::text_ostream_backend > console_backend =
@@ -31,5 +34,6 @@ void init_console() {
                         % boost::log::expressions::smessage
                         );
     core->add_sink(sink_console);
+    #endif
 }
 

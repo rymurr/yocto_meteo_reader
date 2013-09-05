@@ -1,3 +1,4 @@
+#ifndef ARMV6_BUILD
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -9,9 +10,11 @@
 #include <boost/log/sinks.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
+#endif
 #include "logger_config.hpp"
 
 void init_file(std::string fname) {
+    #ifndef ARMV6_BUILD
     boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 
     boost::shared_ptr< boost::log::sinks::text_file_backend > file_backend =
@@ -32,5 +35,6 @@ void init_file(std::string fname) {
                         % boost::log::expressions::smessage
                         );
     core->add_sink(sink_file);
+    #endif
 }
 
