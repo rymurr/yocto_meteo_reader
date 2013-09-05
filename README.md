@@ -16,11 +16,11 @@ Works on x86 w/o a problem for all message types and intputs/outputs. Currently 
 * make code safe and 'deploy' it
 * write some tests and docs
 * lots of error checking!
-* finish refactor of subscriber and build on arm
-* build on electron
 
 ##DEPLOY:
 
+* build on electron
+* build on rpi
 * always running on rpi
 * rotating data removal on rpi
 * shipping to server/mongo db

@@ -5,6 +5,10 @@ meteo
 pub_meteo
 sub_meteo
 libyocto.so
+libmessage.so
+libcommon.so
+libpublisher.so
+libsubscriber.so
 CTestTestfile.cmake
 Makefile
 *.pyc
