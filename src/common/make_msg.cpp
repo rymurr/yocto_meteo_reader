@@ -11,4 +11,11 @@ std::string make_msg(message_type_t msg_type) {
     return buf.str();
 }
 
+message_type_t parse_msg(std::string& msg) {
+    boost::property_tree::ptree pt;
+    std::istringstream is(msg);
+    boost::property_tree::read_json(is, pt);
+    return static_cast<message_type_t>(pt.get<int>("type"));
+}
+
 

@@ -1,27 +1,18 @@
 #ifndef __SUBSCRIBER_HPP__
 #define __SUBSCRIBER_HPP__
 
-#include <signal.h>
 #include <vector>
-#include <algorithm>
-#include <boost/lambda/lambda.hpp>
-#include <boost/bind.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/thread.hpp>
 #include <boost/log/trivial.hpp>
-#include <boost/function.hpp>
-#include <signal.h>
-//#include "google/heap-checker.h"
-#include "zhelpers.hpp"
-#include "message.hpp"
-#include "writer.hpp"
-#include "daily_call.hpp"
-#include "param_helper.hpp"
-#include "logger_config.hpp"
+#include <zmq.hpp>
+#include "make_msg.hpp"
+#include "base_message.hpp"
+#include "base_writer.hpp"
 
+static std::string    
+connect_name(std::string protocol, std::string host, int port) {
+    return protocol.append("://").append(host).append(":").append(std::to_string(port));
+}
 
 class Subscriber {
 
@@ -40,24 +31,9 @@ class Subscriber {
 
         void operator()(); 
 
-        message_type_t parse_msg(std::string& msg) ;
 
         void drain_queue() ;
         
-
-};
-
-class SubControl {
-    private:
-        boost::shared_ptr<Subscriber> _s;
-        void sigill();
-        void sigint();
-
-    public:
-        SubControl(boost::shared_ptr<Subscriber> s): _s(s) {}
-        SubControl() {}
-
-        void intHandler(int sig);
 
 };
 

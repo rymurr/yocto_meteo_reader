@@ -1,155 +1,8 @@
 #include "writer.hpp"
+#include "weekly_disk_writer.hpp"
+#include "disk_writer.hpp"
+#include "mongo_writer.hpp"
 
-static bool make_path(const boost::filesystem::path &p) {
-    BOOST_LOG_TRIVIAL(info) << "Trying to make file " << p;
-    if (boost::filesystem::exists(p)) {
-        if (boost::filesystem::is_directory(p)) {
-            BOOST_LOG_TRIVIAL(info) << "file exists and is a directory, we are good";
-            return true;
-        } else {
-            BOOST_LOG_TRIVIAL(error) << "file exists but is a file, cant save new messages!";
-            return false;
-        }
-    } else {
-        BOOST_LOG_TRIVIAL(warning) << "directory does not exists, trying to create it";
-        return boost::filesystem::create_directories(p);   
-    }
-}
-
-static std::string getDate() {
-   boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
-   boost::posix_time::time_facet *facet = new boost::posix_time::time_facet("%Y%m%d");
-   std::stringstream ss;
-   ss.imbue(std::locale(ss.getloc(), facet));
-   ss << now;
-   std::string retVal(ss.str());
-   return retVal;
-}
-
-void PersistentDiskWriter::clear() {
-    boost::mutex::scoped_lock(guard);
-    BOOST_LOG_TRIVIAL(info) << "Reseting file count";
-    find_current_count(); 
-}
-
-void WeeklyRotateWriter::clear() {
-    boost::mutex::scoped_lock(guard);
-    BOOST_LOG_TRIVIAL(info) << "Reseting file count and rotating";
-    find_current_count(); 
-    rotate();
-}
-
-void WeeklyRotateWriter::rotate() {
-    boost::posix_time::ptime mindate(boost::gregorian::day_clock::universal_day()-boost::gregorian::date_duration(7));
-    boost::filesystem::directory_iterator end_itr;
-    BOOST_LOG_TRIVIAL(info) << "Attempting to delete old/stale messages";
-    for (boost::filesystem::directory_iterator itr(_p); itr != end_itr; ++itr) {
-        boost::posix_time::ptime pt;
-        std::string fname = itr->path().string();
-        boost::replace_first(fname, _p.string(), "");
-        boost::replace_first(fname,"/","");
-        const std::locale loc(std::locale::classic(),new boost::posix_time::time_input_facet("%Y%m%d"));
-        std::istringstream is(fname);
-        is.imbue(loc);
-        is >> pt;
-        if (pt != boost::posix_time::ptime()) {
-            if (pt < mindate){
-                BOOST_LOG_TRIVIAL(warning) << "Removing the file: " << itr->path().string();
-                boost::filesystem::remove_all(itr->path());
-            } else {
-                BOOST_LOG_TRIVIAL(info) << "Keeping the file: " << itr->path().string();
-            }
-        }
-
-    }
-
-}
-
-int DiskWriter::find_current_count() {
-    boost::filesystem::path filename(_p);
-    std::string dir=getDate();
-    filename /= dir;
-    make_path(filename);
-    boost::filesystem::directory_iterator end_itr;
-    int x(-1);
-    for (boost::filesystem::directory_iterator itr(filename); itr != end_itr; ++itr) {
-        std::string fname = itr->path().string();
-        boost::replace_first(fname, filename.string(), "");
-        boost::replace_first(fname, _file_prefix,"");
-        boost::replace_first(fname,".bin","");
-        boost::replace_first(fname,"/","");
-        int c = boost::lexical_cast<int>(fname);
-        if (c > x) {
-            x = c;
-        }
-    }
-    x += 1;
-    BOOST_LOG_TRIVIAL(info) << "Starting files from " << x;
-    return x;
-}
-
-static std::size_t drain_to_mongo(msgArr bson_queue, const boost::filesystem::path &p, message_type_t msg_type) {
-    std::size_t x = -1;
-    #ifdef MONGO_AVAIL
-    FILE * outfile;
-    outfile = std::fopen(p.string().c_str(), "w");
-    mongo::BSONArrayBuilder b;
-    for (std::size_t i=0;i<bson_queue.size();++i) {
-        BOOST_LOG_TRIVIAL(info) << "writing " << bson_queue[i]->string();
-        //all thats left is to handle the binary (on disk) format for general data types.
-        b.append(boost::static_pointer_cast<MongoMessage>(convert(bson_queue[i],msg_type, BSON))->obj());
-    }
-    mongo::BSONArray arr = b.arr();
-    x = std::fwrite(arr.objdata(), 1, arr.objsize(), outfile);
-    #endif
-    return x;
-}
-
-static std::size_t drain_to_json(msgArr bson_queue, const boost::filesystem::path &p, message_type_t msg_type) {
-    std::size_t x = 0;
-    std::ofstream fout;
-    fout.open(p.string().c_str());
-    for (std::size_t i=0;i<bson_queue.size();++i) {
-        BOOST_LOG_TRIVIAL(info) << "writing " << convert(bson_queue[i],msg_type,JSON)->string();
-        fout << bson_queue[i]->string() << "\n";
-        x+=1;
-    }
-    fout.close();
-    return x;
-}
-
-std::size_t DiskWriter::drain_queue_to_file(msgArr bson_queue, const boost::filesystem::path &p) {
-    std::size_t x;
-    switch(_msg_type_store) {
-        case BSON:
-            x=drain_to_mongo(bson_queue, p, _msg_type);
-            break;
-        case JSON:
-            x=drain_to_json(bson_queue, p, _msg_type);
-            break;
-        case INVALID:
-            x = 0;
-            break;    
-        default:
-            x = 0;
-    }
-    return x;
-}
-
-int DiskWriter::drain(msgArr bson_queue) {
-    boost::filesystem::path filename(_p);
-    std::string file(_file_prefix);
-    std::string dir=getDate();
-    filename /= dir;
-    make_path(filename);
-    std::stringstream ss;
-    ss << boost::format("%05i") % _count;
-    std::string cntStr = ss.str();
-    filename /= file.append(cntStr).append(".bin");
-    const int x = drain_queue_to_file(bson_queue, filename);
-    _count += 1;
-    return x;
-}
 
 /*
 static std::vector<mongo::BSONObj> read_file(const boost::filesystem::path &p) {
@@ -195,19 +48,8 @@ ptrWriter WriterBuilder::create(writer_t writer_type, std::string option) {
             retVal = ptrWriter(new WeeklyRotateWriter(option));
             break;    
         default:
-            retVal = NULL;
+            retVal = ptrWriter();
     }
     return retVal;
-}
-int MongoWriter::drain(msgArr msgs) {
-    #ifdef MONGO_AVAIL
-    mongo::DBClientConnection c;
-    c.connect(_hostname);
-    for (std::size_t i=0;i<msgs.size();++i) {
-        BOOST_LOG_TRIVIAL(info) << "inserting " << msgs[i]->string();
-        c.insert("meteo.measurement", boost::static_pointer_cast<MongoMessage>(convert(msgs[i],_msg_type,BSON))->obj());
-    }
-    #endif
-    return 1;
 }
 

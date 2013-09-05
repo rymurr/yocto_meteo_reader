@@ -1,4 +1,34 @@
 #include "subscriber.hpp"
+#include "message.hpp"
+
+static bool
+s_send (zmq::socket_t & socket, const std::string & string) {
+
+    zmq::message_t message(string.size());
+    memcpy (message.data(), string.data(), string.size());
+
+    bool rc = socket.send (message);
+    return (rc);
+}
+
+static bool
+s_sendmore (zmq::socket_t & socket, const std::string & string) {
+
+    zmq::message_t message(string.size());
+    memcpy (message.data(), string.data(), string.size());
+
+    bool rc = socket.send (message, ZMQ_SNDMORE);
+    return (rc);
+}
+
+static std::string
+s_recv (zmq::socket_t & socket) {
+
+    zmq::message_t message;
+    socket.recv(&message);
+
+    return std::string(static_cast<char*>(message.data()), message.size());
+}
 
 Subscriber::Subscriber(boost::shared_ptr<AbstractWriter> writer, std::string protocol, std::string host, int port, int max): _context(1), _subscriber(_context, ZMQ_SUB), _sync(_context, ZMQ_REQ), _writer(writer), _max(max) {
     BOOST_LOG_TRIVIAL(info) << "Subscribing to: " << connect_name(protocol, host, port);
@@ -27,13 +57,6 @@ void Subscriber::operator()() {
     }
 }
 
-message_type_t Subscriber::parse_msg(std::string& msg) {
-    boost::property_tree::ptree pt;
-    std::istringstream is(msg);
-    boost::property_tree::read_json(is, pt);
-    return static_cast<message_type_t>(pt.get<int>("type"));
-}
-
 void Subscriber::drain_queue() {
     boost::mutex::scoped_lock(guard);
     const int x = _writer->drain(_bson_queue);
@@ -42,53 +65,4 @@ void Subscriber::drain_queue() {
 
 }
 
-void SubControl::sigill(){
-    //BOOST_LOG_TRIVIAL(warning) << "Attempting to run a heap check";
-    //HeapLeakChecker::NoGlobalLeaks();    
-    return;
-};
 
-void SubControl::sigint(){
-    BOOST_LOG_TRIVIAL(fatal) << "Recieved sigint! Goodbye!";
-    _s->drain_queue();
-    exit(1);
-};
-
-void SubControl::intHandler(int sig) {
-    switch(sig) {
-        case 2:
-            sigint();
-            break;
-        case 4:
-            sigill();
-            break;
-        default:
-            BOOST_LOG_TRIVIAL(error) << "Unable to handle signal!";
-    }
-};
-
-SubControl sc;
-void intHandler(int sig){
-    sc.intHandler(sig);
-}
-
-int main (int argc, char** argv) {
-    init("subscriber");
-
-    SubscriberParams sp;
-    const int paramRet = sp.parse_options(argc, argv);
-    if (paramRet != 0) {
-        return 1;
-    }
-    boost::shared_ptr<AbstractWriter> w = WriterBuilder::create(sp.getStorageFormat(), sp.getOption());
-    w->setMsgTypeStore(sp.getStorageType());
-    boost::function<void(void)> f = boost::bind(&AbstractWriter::clear, w);
-    boost::shared_ptr<Subscriber> s = boost::shared_ptr<Subscriber>(new Subscriber(w, "tcp", sp.getPublishHostName(), sp.getPublishPort(), sp.getQueueSize())); 
-    sc = SubControl(s);
-    signal(SIGINT, intHandler);
-    signal(SIGILL, intHandler);
-
-    boost::thread subThread(boost::ref(*s));
-    start_callbacks(f);
-    return 0;
-}

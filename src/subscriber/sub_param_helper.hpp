@@ -3,7 +3,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
-#include "writer.hpp"
+#include "base_writer.hpp"
 #include "base_message.hpp"
 #include "msg_operator.hpp"
 

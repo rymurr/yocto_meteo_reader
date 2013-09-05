@@ -1,14 +1,8 @@
-#include <iostream>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
 #include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
-#include <boost/log/trivial.hpp>
-
+#include <boost/system/error_code.hpp>
 
 using namespace boost::asio;
-using namespace std;
 
 class Deadline 
 {
