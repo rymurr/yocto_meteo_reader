@@ -60,7 +60,8 @@ class TypedSensor:public Sensor {
             boost::split(strs, name, boost::is_any_of("."));
             boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
 
-            boost::shared_ptr<Message> reading = make_message(strs[0], strs[1], return_ms_from_epoch(now), boost::lexical_cast<double>(value), Sensor::_msg_type);
+            long long msnow = return_ms_from_epoch(now);
+            boost::shared_ptr<Message> reading = make_message(strs[0], strs[1], msnow, boost::lexical_cast<double>(value), Sensor::_msg_type);
             boost::mutex::scoped_lock(guard);
             //for_each(_callbacks.begin(), _callbacks.end(), boost::bind<void>(&readingCallback::operator(),_1,r));
             for (int i=0;i<_callbacks.size();++i) {

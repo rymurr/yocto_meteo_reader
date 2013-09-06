@@ -19,8 +19,6 @@ Works on x86 w/o a problem for all message types and intputs/outputs. Currently 
 
 ##DEPLOY:
 
-* build on electron
-* build on rpi
 * always running on rpi
 * rotating data removal on rpi
 * shipping to server/mongo db
