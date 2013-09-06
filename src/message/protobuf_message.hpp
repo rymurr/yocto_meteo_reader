@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/shared_ptr.hpp>
+#include <algorithm>
 #include "base_message.hpp"
 
 #ifdef PROTOBUF_AVAIL
@@ -13,21 +14,28 @@
 class ProtoBufMessage: public Message {
     private:
         meteo::SensorReading _obj;
+        boost::shared_ptr<void> _msg;
+
     public:
         ProtoBufMessage(std::string device, std::string sensor, long long timestamp, double value) {
             _obj.set_value(value); 
+            std::cout << "value is: " << _obj.value() << std::endl;
             _obj.set_device(device);
             _obj.set_sensor(sensor);
             _obj.set_timestamp(timestamp);
         }
 
-        ProtoBufMessage(char* data){
-            _obj.ParseFromString(std::string(data));           
+        ProtoBufMessage(void* data){
+            int size = strlen(static_cast<char*>(data));
+            int rsize = std::max(size,39);
+            _obj.ParseFromArray(data, rsize);
         }
 
         virtual msgPtr fillmessage() {
-            std::string msg = _obj.SerializeAsString();
-            return boost::shared_ptr<zmq::message_t>(new zmq::message_t(const_cast<char*>(msg.c_str()), msg.size(), msg_free));
+            int size = _obj.ByteSize();
+            _msg = boost::shared_ptr<void>(malloc(size));
+            _obj.SerializeToArray(_msg.get(), size);
+            return boost::shared_ptr<zmq::message_t>(new zmq::message_t(_msg.get(), size, msg_free));
         }
 
         virtual std::string id() {
