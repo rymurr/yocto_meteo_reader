@@ -27,11 +27,11 @@ boost::shared_ptr<Message> convertToMongo(boost::shared_ptr<Message> m, message_
     switch (mtype) {
         case JSON:
             x = boost::static_pointer_cast<JSONMessage>(m);
-            msg = boost::shared_ptr<Message>(new MongoMessage(x->id(), x->device(), x->timestamp(), x->value()));
+            msg = boost::shared_ptr<Message>(new MongoMessage(x->device(), x->id(), x->timestamp(), x->value()));
             break;
         case PROTOBUF:
             x = boost::make_shared<JSONMessage>(JSONMessage(const_cast<char*>(m->string().c_str())));
-            msg = boost::shared_ptr<Message>(new MongoMessage(x->id(), x->device(), x->timestamp(), x->value()));
+            msg = boost::shared_ptr<Message>(new MongoMessage(x->device(), x->id(), x->timestamp(), x->value()));
             break;
         case BSON:
             msg = m;
@@ -66,14 +66,14 @@ boost::shared_ptr<Message> convertToProtoBuf(boost::shared_ptr<Message> m, messa
     switch (mtype) {
         case JSON:
             x = boost::static_pointer_cast<JSONMessage>(m);
-            msg = boost::shared_ptr<Message>(new ProtoBufMessage(x->id(), x->device(), x->timestamp(), x->value()));
+            msg = boost::shared_ptr<Message>(new ProtoBufMessage(x->device(), x->id(), x->timestamp(), x->value()));
             break;
         case PROTOBUF:
             msg = m;
             break;
         case BSON:
             x = boost::make_shared<JSONMessage>(JSONMessage(const_cast<char*>(m->string().c_str())));
-            msg = boost::shared_ptr<Message>(new ProtoBufMessage(x->id(), x->device(), x->timestamp(), x->value()));
+            msg = boost::shared_ptr<Message>(new ProtoBufMessage(x->device(), x->id(), x->timestamp(), x->value()));
             break;
         default:
             msg = boost::shared_ptr<Message>();
@@ -85,13 +85,13 @@ boost::shared_ptr<Message> make_message(std::string sensor, std::string device, 
     boost::shared_ptr<Message> msg;
     switch(msg_type) {
         case BSON:
-            msg = boost::shared_ptr<Message>(new MongoMessage(sensor, device, timestamp, value));
+            msg = boost::shared_ptr<Message>(new MongoMessage(device, sensor, timestamp, value));
             break;
         case JSON:
-            msg = boost::shared_ptr<Message>(new JSONMessage(sensor, device, timestamp, value));
+            msg = boost::shared_ptr<Message>(new JSONMessage(device, sensor, timestamp, value));
             break;
         case PROTOBUF:
-            msg = boost::shared_ptr<Message>(new ProtoBufMessage(sensor, device, timestamp, value));
+            msg = boost::shared_ptr<Message>(new ProtoBufMessage(device, sensor, timestamp, value));
             break;
         default:
             msg = boost::shared_ptr<Message>();    
