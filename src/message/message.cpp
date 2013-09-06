@@ -111,7 +111,7 @@ boost::shared_ptr<Message> s_recvobj (zmq::socket_t & socket, message_type_t msg
             m = boost::make_shared<MongoMessage>(MongoMessage(static_cast<char*>(message.data())));
             break;
         case PROTOBUF:
-            m = boost::make_shared<ProtoBufMessage>(ProtoBufMessage(static_cast<void*>(message.data())));
+            m = boost::make_shared<ProtoBufMessage>(ProtoBufMessage(static_cast<void*>(message.data()), message.size()));
             break;
         case JSON:
             m = boost::make_shared<JSONMessage>(JSONMessage(static_cast<char*>(message.data())));

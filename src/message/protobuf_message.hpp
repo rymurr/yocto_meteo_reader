@@ -24,10 +24,8 @@ class ProtoBufMessage: public Message {
             _obj.set_timestamp(timestamp);
         }
 
-        ProtoBufMessage(void* data){
-            int size = strlen(static_cast<char*>(data));
-            int rsize = std::max(size,39);
-            _obj.ParseFromArray(data, rsize);
+        ProtoBufMessage(void* data, const int size){
+            _obj.ParseFromArray(data, size);
         }
 
         virtual msgPtr fillmessage() {
