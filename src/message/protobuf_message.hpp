@@ -19,7 +19,6 @@ class ProtoBufMessage: public Message {
     public:
         ProtoBufMessage(std::string device, std::string sensor, long long timestamp, double value) {
             _obj.set_value(value); 
-            std::cout << "value is: " << _obj.value() << std::endl;
             _obj.set_device(device);
             _obj.set_sensor(sensor);
             _obj.set_timestamp(timestamp);
