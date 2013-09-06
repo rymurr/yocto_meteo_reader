@@ -5,6 +5,7 @@
 #include <boost/log/trivial.hpp>
 #include "mongo/client/dbclient.h"
 #include "message.hpp"
+#include "mongo_message.hpp"
 #endif
 
 int MongoWriter::drain(msgArr msgs) {

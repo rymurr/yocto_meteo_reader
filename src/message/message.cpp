@@ -1,5 +1,8 @@
-
+#include "mongo_message.hpp"
+#include "protobuf_message.hpp"
+#include "json_message.hpp"
 #include "message.hpp"
+
 boost::shared_ptr<Message> convert(boost::shared_ptr<Message> m, message_type_t intype, message_type_t outtype) {
     boost::shared_ptr<Message> msg;
     switch(outtype) {
@@ -95,3 +98,28 @@ boost::shared_ptr<Message> make_message(std::string sensor, std::string device, 
     }
     return msg;
 }
+
+
+
+boost::shared_ptr<Message> s_recvobj (zmq::socket_t & socket, message_type_t msg_type) {
+    zmq::message_t message;
+    socket.recv(&message);
+
+    boost::shared_ptr<Message> m;
+    switch(msg_type) {
+        case BSON:
+            m = boost::make_shared<MongoMessage>(MongoMessage(static_cast<char*>(message.data())));
+            break;
+        case PROTOBUF:
+            m = boost::make_shared<ProtoBufMessage>(ProtoBufMessage(static_cast<char*>(message.data())));
+            break;
+        case JSON:
+            m = boost::make_shared<JSONMessage>(JSONMessage(static_cast<char*>(message.data())));
+            break;
+        default:
+            m = boost::shared_ptr<Message>();    
+    }
+    return m;
+}
+
+

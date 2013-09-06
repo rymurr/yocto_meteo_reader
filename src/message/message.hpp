@@ -3,37 +3,11 @@
 #define _MESSAGE_HPP_
 
 #include <sstream>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+#include <zmq.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include "mongo_message.hpp"
-#include "protobuf_message.hpp"
-#include "json_message.hpp"
-
-static boost::shared_ptr<Message>
-s_recvobj (zmq::socket_t & socket, message_type_t msg_type) {
-
-    zmq::message_t message;
-    socket.recv(&message);
-
-    boost::shared_ptr<Message> m;
-    switch(msg_type) {
-        case BSON:
-            m = boost::make_shared<MongoMessage>(MongoMessage(static_cast<char*>(message.data())));
-            break;
-        case PROTOBUF:
-            m = boost::make_shared<ProtoBufMessage>(ProtoBufMessage(static_cast<char*>(message.data())));
-            break;
-        case JSON:
-            m = boost::make_shared<JSONMessage>(JSONMessage(static_cast<char*>(message.data())));
-            break;
-        default:
-            m = boost::shared_ptr<Message>();    
-    }
-    return m;
-}
-
+#include "base_message.hpp"
+boost::shared_ptr<Message> s_recvobj (zmq::socket_t & socket, message_type_t msg_type) ;
 boost::shared_ptr<Message> make_message(std::string sensor, std::string device, long long timestamp, double value, message_type_t msg_type);
 
 boost::shared_ptr<Message> convert(boost::shared_ptr<Message> m, message_type_t intype, message_type_t outtype);

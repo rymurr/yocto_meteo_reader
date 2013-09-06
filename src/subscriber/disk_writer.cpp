@@ -1,10 +1,11 @@
-#include <iostream>
+#include <fstream>
 #include <boost/algorithm/string.hpp>
 #include "disk_writer.hpp"
 #include "file_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include "message.hpp"
+#include "mongo_message.hpp"
 #ifdef MONGO_AVAIL
 #include "mongo/client/dbclient.h"
 #endif

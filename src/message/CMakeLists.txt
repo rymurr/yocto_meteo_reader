@@ -6,7 +6,7 @@ if(PROTOBUF_FOUND)
   PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS meteo.proto)
 endif(PROTOBUF_FOUND)
   
-set(message_src message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
+set(message_src message.cpp json_message.cpp ${PROTO_SRCS} ${PROTO_HDRS})
 
 #if(${MongoDB_FOUND})
 #    link_libraries(${MongoDB_LIBRARIES})
