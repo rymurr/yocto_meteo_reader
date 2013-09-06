@@ -60,7 +60,7 @@ void Subscriber::operator()() {
 void Subscriber::drain_queue() {
     boost::mutex::scoped_lock(guard);
     const int x = _writer->drain(_bson_queue);
-    if (x<0)
+    if (x>0)
         _bson_queue.clear();
 
 }
