@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
     if (paramRet != 0) {
         return 1;
     }
-    boost::shared_ptr<Publisher> y = boost::make_shared<Publisher>(Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
+    boost::shared_ptr<Publisher> y = boost::shared_ptr<Publisher>(new Publisher("*", pp.getPort(), "tcp", pp.getMessageType()));
     boost::function<void (boost::shared_ptr<Message>)> fct = boost::bind<void>(&Publisher::callback, y, _1);
     sc = PubControl(y);
     signal(SIGINT, intHandler);
